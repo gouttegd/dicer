@@ -43,6 +43,7 @@ public class IDRangePolicyWriterTest {
         }
 
         File written = new File("src/test/resources/output/" + actualBasename + "-idranges.owl.out");
+        written.getParentFile().mkdir();
         IDRangePolicyWriter writer = new IDRangePolicyWriter();
         writer.write(policy, written);
 
