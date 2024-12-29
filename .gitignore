@@ -1,0 +1,8 @@
+target/
+.classpath
+.project
+.settings/
+
+dependency-reduced-pom.xml
+
+lib/src/test/resources/*.out

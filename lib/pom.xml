@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.incenp</groupId>
+    <artifactId>dicer</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>dicer-lib</artifactId>
+
+  <name>Dicer-Lib</name>
+  <description>Library to manipulate OBO ID ranges</description>
+  <url>https://incenp.org/dvlpt/dicer/library.html</url>
+  <scm>
+    <url>https://github.com/gouttegd/dicer</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.sourceforge.owlapi</groupId>
+      <artifactId>owlapi-apibinding</artifactId>
+      <version>4.5.29</version>
+    </dependency>
+  </dependencies>
+
+</project>
