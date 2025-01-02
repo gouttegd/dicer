@@ -139,14 +139,14 @@ public class IDRangePolicy {
      * 
      * @return The upper bound of the highest possible range.
      */
-    public long getMaxUpperBound() {
+    public int getMaxUpperBound() {
         return maxBound;
     }
 
     /**
      * Gets all the ID ranges defined in this policy, sorted by their IDs.
      * 
-     * @return A collection of all the ranges in this policy.
+     * @return A list of all the ranges in this policy.
      */
     public List<IDRange> getRangesByID() {
         ArrayList<IDRange> list = new ArrayList<IDRange>(ranges.values());
@@ -158,12 +158,34 @@ public class IDRangePolicy {
      * Gets all the ID ranges defined in this policy, sorted by the lower bound of
      * each range.
      * 
-     * @return A collection of all the ranges in this policy.
+     * @return A list of all the ranges in this policy.
      */
     public List<IDRange> getRangesByLowerBound() {
         ArrayList<IDRange> list = new ArrayList<IDRange>(ranges.values());
-        list.sort((a, b) -> Long.compare(a.getLowerBound(), b.getLowerBound()));
+        list.sort((a, b) -> Integer.compare(a.getLowerBound(), b.getLowerBound()));
         return list;
+    }
+
+    /**
+     * Gets all the non-allocated ranges in this policy, sorted by the lower bound
+     * of each range.
+     * 
+     * @return A list of the free ranges in this policy.
+     */
+    public List<IDRange> getUnallocatedRanges() {
+        ArrayList<IDRange> unallocated = new ArrayList<IDRange>();
+        int start = 0;
+        for ( IDRange range : getRangesByLowerBound() ) {
+            if ( range.getLowerBound() > start ) {
+                unallocated.add(new IDRange(0, "Unallocated", null, start, range.getLowerBound() - start));
+            }
+            start = range.getUpperBound();
+        }
+        if ( start < maxBound ) {
+            unallocated.add(new IDRange(0, "Unallocated", null, start, maxBound - start));
+        }
+
+        return unallocated;
     }
 
     /**

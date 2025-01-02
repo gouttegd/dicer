@@ -129,6 +129,15 @@ public class IDRange {
         return upperBound;
     }
 
+    /**
+     * Gets the number of IDs available in this range.
+     * 
+     * @return The range size.
+     */
+    public int getSize() {
+        return upperBound - lowerBound;
+    }
+
     @Override
     public String toString() {
         return String.format("id=%d, name=%s, bounds=[%d..%d)", id, name, lowerBound, upperBound);

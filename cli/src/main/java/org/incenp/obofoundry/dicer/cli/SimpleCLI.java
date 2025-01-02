@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.dicer.cli;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.incenp.obofoundry.dicer.IDRange;
 import org.incenp.obofoundry.dicer.IDRangePolicy;
@@ -72,6 +73,24 @@ public class SimpleCLI implements Runnable {
         int size;
     }
 
+    @ArgGroup(validate = false, heading = "%nListing options:%n")
+    private ListOptions listOptions = new ListOptions();
+
+    private static class ListOptions {
+        @Option(names = { "-l", "--list" },
+                defaultValue = "false",
+                description = "Print a list of the ranges.")
+        boolean showList;
+
+        @Option(names = "--show-unallocated", defaultValue = "false",
+                description = "When listing ranges, also show unallocated ranges.")
+        boolean showUnallocated;
+
+        @Option(names = "--min-size", paramLabel = "N", defaultValue = "10",
+                description = "Do not show ranges smaller than N (default: 10; set to zero to show all ranges).")
+        int minSize;
+    }
+
     private CommandHelper helper = new CommandHelper();
     private IDRangePolicy policy = null;
 
@@ -116,6 +135,17 @@ public class SimpleCLI implements Runnable {
                     rng.getName());
         }
 
+        if ( listOptions.showList ) {
+            List<IDRange> ranges = policy.getRangesByLowerBound();
+            if ( listOptions.showUnallocated ) {
+                ranges.addAll(policy.getUnallocatedRanges());
+                ranges.sort((a, b) -> Integer.compare(a.getLowerBound(), b.getLowerBound()));
+            }
+            for ( IDRange rng : ranges ) {
+                printRange(rng);
+            }
+        }
+
         if ( ioOptions.outputFile != null ) {
             try {
                 new IDRangePolicyWriter().write(policy, ioOptions.outputFile);
@@ -125,4 +155,10 @@ public class SimpleCLI implements Runnable {
         }
     }
 
+    private void printRange(IDRange range) {
+        if ( range.getSize() < listOptions.minSize ) {
+            return;
+        }
+        System.out.printf("%s: [%d..%d)\n", range.getName(), range.getLowerBound(), range.getUpperBound());
+    }
 }
