@@ -48,4 +48,34 @@ public class IDRangePolicyReaderTest {
         Assertions.assertEquals(8450001, own.getLowerBound());
         Assertions.assertEquals(8460000, own.getUpperBound());
     }
+
+    @Test
+    void testReadSimplePolicy() {
+        IDRangePolicyReader p = new IDRangePolicyReader();
+        IDRangePolicy policy = null;
+        try {
+            policy = p.read("src/test/resources/input/myont-idranges.owl");
+        } catch ( IOException e ) {
+            Assertions.fail(e);
+        } catch ( InvalidIDRangePolicyException e ) {
+            Assertions.fail(e);
+        }
+
+        Assertions.assertEquals("http://purl.obolibrary.org/obo/myont", policy.getName());
+        Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_", policy.getPrefix());
+        Assertions.assertEquals("MYONT", policy.getPrefixName());
+        Assertions.assertEquals(7, policy.getWidth());
+
+        IDRange rng = policy.getRangeFor("user1");
+        Assertions.assertNotNull(rng);
+        Assertions.assertEquals(1, rng.getID());
+        Assertions.assertEquals(0, rng.getLowerBound());
+        Assertions.assertEquals(10000, rng.getUpperBound());
+
+        rng = policy.getRangeFor("user2");
+        Assertions.assertNotNull(rng);
+        Assertions.assertEquals(2, rng.getID());
+        Assertions.assertEquals(10000, rng.getLowerBound());
+        Assertions.assertEquals(30000, rng.getUpperBound());
+    }
 }

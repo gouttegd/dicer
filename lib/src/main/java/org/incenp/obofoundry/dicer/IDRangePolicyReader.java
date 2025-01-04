@@ -154,7 +154,7 @@ public class IDRangePolicyReader {
             int id = getRangeID(datatype.getIRI().toString());
             for ( OWLDatatypeDefinitionAxiom ax : ontology.getDatatypeDefinitions(datatype) ) {
                 ax.getDataRange().accept(visitor);
-                if ( visitor.lower > 0 ) {
+                if ( visitor.lower >= 0 ) {
                     policy.addRange(id, name, comment, visitor.lower, visitor.upper);
                 }
             }
