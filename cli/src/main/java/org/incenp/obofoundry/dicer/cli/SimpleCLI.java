@@ -30,6 +30,7 @@ import org.incenp.obofoundry.dicer.InvalidIDRangePolicyException;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * A command-line interface to manipulate ID range policies.
@@ -43,19 +44,31 @@ import picocli.CommandLine.Option;
          footerHeading = "%n")
 public class SimpleCLI implements Runnable {
 
-    @ArgGroup(validate = false, heading = "%nI/O options:%n")
+    @ArgGroup(exclusive = false, multiplicity = "1", heading = "%nI/O options:%n")
     private IOOptions ioOptions = new IOOptions();
 
     private static class IOOptions {
-        @Option(names = {"-i", "--input"},
-                paramLabel = "FILE",
-                description = "Load the policy from FILE.")
+        @Parameters(index = "0", paramLabel = "FILE",
+                description = "The policy file to read.")
         String inputFile;
+
+        String outputFile;
 
         @Option(names = { "-o", "--output"},
                 paramLabel = "FILE",
-                description = "Write the policy to FILE.")
-        String outputFile;
+                description = "Write the policy to FILE. Default is to write back to the original input file.")
+        public void setOutputFile(String file) {
+            outputFile = file;
+            write = true;
+        }
+
+        public String getOutputFile() {
+            return outputFile != null ? outputFile : inputFile;
+        }
+
+        @Option(names = { "-s", "--save"}, defaultValue = "false",
+                description = "Force writing the policy. Implied by --output and any option that modifies the policy.")
+        boolean write;
     }
 
     @ArgGroup(validate = false, heading = "%nEditing options:%n")
@@ -112,17 +125,10 @@ public class SimpleCLI implements Runnable {
 
     @Override
     public void run() {
-        if ( ioOptions.inputFile != null ) {
-            IDRangePolicyReader reader = new IDRangePolicyReader();
-            try {
-                policy = reader.read(ioOptions.inputFile);
-            } catch ( IOException | InvalidIDRangePolicyException e ) {
-                helper.error("Cannot read policy file: %s", e.getMessage());
-            }
-        }
-
-        if ( policy == null ) {
-            return;
+        try {
+            policy = new IDRangePolicyReader().read(ioOptions.inputFile);
+        } catch ( IOException | InvalidIDRangePolicyException e ) {
+            helper.error("Cannot read policy file: %s", e.getMessage());
         }
 
         if ( editOptions.newRange != null ) {
@@ -133,6 +139,7 @@ public class SimpleCLI implements Runnable {
 
             helper.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
                     rng.getName());
+            ioOptions.write = true;
         }
 
         if ( listOptions.showList ) {
@@ -146,9 +153,9 @@ public class SimpleCLI implements Runnable {
             }
         }
 
-        if ( ioOptions.outputFile != null ) {
+        if ( ioOptions.write ) {
             try {
-                new IDRangePolicyWriter().write(policy, ioOptions.outputFile);
+                new IDRangePolicyWriter().write(policy, ioOptions.getOutputFile());
             } catch ( IOException e ) {
                 helper.error("Cannot write policy file: %s", e.getMessage());
             }

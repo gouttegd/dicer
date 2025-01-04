@@ -35,7 +35,11 @@ public class CommandHelper implements IVersionProvider, IExecutionExceptionHandl
     @Override
     public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult fullParseResult)
             throws Exception {
-        warn(ex.getMessage());
+        if ( ex.getMessage() != null ) {
+            warn(ex.getMessage());
+        } else {
+            warn("Unknown exception: %s", ex.toString());
+        }
         return commandLine.getCommandSpec().exitCodeOnExecutionException();
     }
 

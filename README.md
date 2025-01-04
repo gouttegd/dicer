@@ -14,40 +14,57 @@ interfering RNA gene silencing pathway.
 
 Command-line usage
 ------------------
-The command-line tool currently allows performing three tasks:
+The command-line tool currently allows performing the following tasks.
 
-* validating an ID range policy (checking that it is syntactically
-  correct, and also that the defined ID ranges do not overlap);
-* re-serialising a policy file;
-* allocate a new range of a given size (automatically finding the lowest
-  available range).
-
-To validate a policy file:
+### Validating a policy file
+Simply call the tool with the name of the policy file to validate:
 
 ```sh
-$ dicer-cli --input myont-idranges.owl
+$ dicer-cli myont-idranges.owl
 ```
 
 The command will exit with a return code of zero if the file contains a
 valid policy; otherwise, an error message will be printed and the
 command will exit with a non-zero value.
 
-To re-serialise a policy file:
+### Re-serialising a policy file
+Add the `--save` option to force the tool to write the policy back to
+the original input file:
 
 ```sh
-$ dicer-cli --input myont-idranges.owl --output reserialised.owl
+$ dicer-cli myont-idranges.owl --save
 ```
 
-To allocate a range of 50,000 IDs to the user _Alice_:
+To write the re-serialised policy into a different file, use the
+`--output` option instead:
 
 ```sh
-$ dicer-cli --input myont-idranges.owl --add-range Alice --size 50000 \
-            --output edited.owl
-dicer-cli: Allocated range [100000..150000) for user "Alice"
+$ dicer-cli myont-idranges.owl --output reserialised-idranges.owl
 ```
 
-Beware that the command-line syntax is currently not fixed at all, so it
-may very well change completely as new features are added to the tool.
+### Listing ranges in the policy
+Use the `--list` option to print the ranges defined in the policy,
+sorted by their bounds (lower ranges first):
+
+```sh
+$ dicer-cli myont-idranges --list
+Alice: [0..10000)
+Bob: [50000..60000)
+```
+
+### Allocate a new range
+To automatically allocate a new range of 20,000 IDs to the user
+_Charlie_:
+
+```sh
+$ dicer-cli myont-idranges.owl --add-range Charlie --size 20000
+dicer-cli: Allocated range [10000..30000) for user "Charlie"
+```
+
+Allocating a new range automatically implies the `--save` option, so
+that the modified policy with its new range is automatically saved to
+its original file. To save it to a different file, use the `--output`
+option.
 
 
 Building
