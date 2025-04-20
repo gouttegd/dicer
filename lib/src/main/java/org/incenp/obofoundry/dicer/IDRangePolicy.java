@@ -196,12 +196,7 @@ public class IDRangePolicy {
      *         not contain a range for that user.
      */
     public IDRange getRangeFor(String name) {
-        for ( IDRange range : ranges.values() ) {
-            if ( range.getName().equals(name) ) {
-                return range;
-            }
-        }
-        return null;
+        return ranges.get(name);
     }
 
     /**
