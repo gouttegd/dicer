@@ -99,6 +99,23 @@ public class IDRangePolicyTest {
     }
 
     @Test
+    void testLookupByNameWithOptional() {
+        IDRangePolicy policy = new IDRangePolicy("myont");
+        try {
+            policy.addRange(1, "user1", null, 0, 10000);
+            policy.addRange(2, "user2", null, 10000, 20000);
+            policy.addRange(3, "user3", null, 20000, 30000);
+        } catch ( InvalidIDRangePolicyException e ) {
+            Assertions.fail(e);
+        }
+
+        Assertions.assertEquals(0, policy.getRange("user1").get().getLowerBound());
+        Assertions.assertEquals(10000, policy.getRange("user2").get().getLowerBound());
+        Assertions.assertEquals(20000, policy.getRange("user3").get().getLowerBound());
+        Assertions.assertFalse(policy.getRange("user4").isPresent());
+    }
+
+    @Test
     void testRangesByID() {
         IDRangePolicy policy = new IDRangePolicy("myont");
         try {

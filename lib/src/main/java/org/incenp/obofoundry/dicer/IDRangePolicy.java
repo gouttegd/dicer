@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Represents a comprehensive ID range policy, that both describes the expected
@@ -194,9 +195,22 @@ public class IDRangePolicy {
      * @param name The name of the user for which to retrieve the range.
      * @return The range allocated to the user, or {@code null} if the policy does
      *         not contain a range for that user.
+     * @deprecated Use {@link #getRange(String)} instead.
      */
+    @Deprecated
     public IDRange getRangeFor(String name) {
         return ranges.get(name);
+    }
+
+    /**
+     * Gets the range allocated to a given user.
+     * 
+     * @param name The name of the user for which to retrieve the range.
+     * @return Optional of the requested range, or Optional.empty if the policy does
+     *         not contain any range with that name.
+     */
+    public Optional<IDRange> getRange(String name) {
+        return Optional.ofNullable(ranges.get(name));
     }
 
     /**
