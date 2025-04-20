@@ -195,7 +195,8 @@ public class IDRangePolicy {
      * @param name The name of the user for which to retrieve the range.
      * @return The range allocated to the user, or {@code null} if the policy does
      *         not contain a range for that user.
-     * @deprecated Use {@link #getRange(String)} instead.
+     * @deprecated Use {@link #findRange(String)} or {@link #getRange(String)}
+     *             instead.
      */
     @Deprecated
     public IDRange getRangeFor(String name) {
@@ -203,14 +204,33 @@ public class IDRangePolicy {
     }
 
     /**
-     * Gets the range allocated to a given user.
+     * Finds the range allocated to a given user.
      * 
      * @param name The name of the user for which to retrieve the range.
      * @return Optional of the requested range, or Optional.empty if the policy does
      *         not contain any range with that name.
      */
-    public Optional<IDRange> getRange(String name) {
+    public Optional<IDRange> findRange(String name) {
         return Optional.ofNullable(ranges.get(name));
+    }
+
+    /**
+     * Gets the range allocated to a given user.
+     * <p>
+     * This is similar to {@link #findRange(String)}, except that it assumes the
+     * range exists and consequently throws an exception if it does not.
+     * 
+     * @param name The name of the user for which to retrieve the range.
+     * @return The requested range.
+     * @throws NoSuchIDRangeException If there is no range associated to the given
+     *                                name
+     */
+    public IDRange getRange(String name) throws NoSuchIDRangeException {
+        IDRange rng = ranges.get(name);
+        if ( rng == null ) {
+            throw new NoSuchIDRangeException(name);
+        }
+        return rng;
     }
 
     /**
