@@ -1,6 +1,6 @@
 /*
  * Dicer - OBO ID range library
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 package org.incenp.obofoundry.dicer;
 
 /**
- * An exception that is thrown when a ID range policy is invalid.
+ * An exception that is thrown when a ID range policy runs out of available IDs.
  */
-public class InvalidIDRangePolicyException extends IDException {
+public class OutOfIDSpaceException extends IDException {
 
-    private static final long serialVersionUID = 2401919726320928281L;
+    private static final long serialVersionUID = -4020992850991980598L;
 
     /**
      * Creates a new instance with the specified error message.
@@ -31,7 +31,7 @@ public class InvalidIDRangePolicyException extends IDException {
      * @param msg  A message describing the error.
      * @param args Arguments to substitute in the {@code msg} format string.
      */
-    public InvalidIDRangePolicyException(String msg, Object... args) {
+    public OutOfIDSpaceException(String msg, Object... args) {
         super(msg, args);
     }
 }

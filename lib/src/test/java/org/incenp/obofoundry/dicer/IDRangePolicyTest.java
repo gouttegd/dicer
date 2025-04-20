@@ -48,21 +48,54 @@ public class IDRangePolicyTest {
     @Test
     void testCreatingFirstRange() {
         IDRangePolicy policy = new IDRangePolicy("myont");
-        IDRange rng = policy.addRange("user1", null, 10000);
-        Assertions.assertNotNull(rng);
-        Assertions.assertEquals(0, rng.getLowerBound());
-        Assertions.assertEquals(10000, rng.getUpperBound());
+        try {
+            IDRange rng = policy.addRange("user1", null, 10000);
+
+            Assertions.assertNotNull(rng);
+            Assertions.assertEquals(0, rng.getLowerBound());
+            Assertions.assertEquals(10000, rng.getUpperBound());
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
     }
 
     @Test
     void testNotEnoughSpace() {
         IDRangePolicy policy = new IDRangePolicy("myont");
         // Create a range that takes up most of the available space
-        policy.addRange("user1", null, 9000000);
+        try {
+            policy.addRange("user1", null, 9000000);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
 
         Assertions.assertEquals(9000000, policy.findOpenRange(10000));
         Assertions.assertEquals(9000000, policy.findOpenRange(1000000));
         Assertions.assertEquals(-1, policy.findOpenRange(1000001));
+    }
+
+    @Test
+    void testNotEnoughSpaceException() {
+        IDRangePolicy policy = new IDRangePolicy("myont");
+        // Create a range that takes up most of the available space
+        try {
+            policy.addRange("user1", null, 9000000);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
+
+        try {
+            policy.addRange("user2", null, 10000);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
+
+        try {
+            policy.addRange("user3", null, 1000000);
+            Assertions.fail("Expected OutOfIDSpaceException not thrown");
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.assertEquals("Not enough space for a 1000000-wide range", e.getMessage());
+        }
     }
 
     @Test

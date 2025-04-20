@@ -26,6 +26,7 @@ import org.incenp.obofoundry.dicer.IDRangePolicy;
 import org.incenp.obofoundry.dicer.IDRangePolicyReader;
 import org.incenp.obofoundry.dicer.IDRangePolicyWriter;
 import org.incenp.obofoundry.dicer.InvalidIDRangePolicyException;
+import org.incenp.obofoundry.dicer.OutOfIDSpaceException;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -132,14 +133,14 @@ public class SimpleCLI implements Runnable {
         }
 
         if ( editOptions.newRange != null ) {
-            IDRange rng = policy.addRange(editOptions.newRange, null, editOptions.size);
-            if ( rng == null ) {
-                helper.error("Cannot allocate a range of %d IDs", editOptions.size);
+            try {
+                IDRange rng = policy.addRange(editOptions.newRange, null, editOptions.size);
+                helper.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
+                        rng.getName());
+                ioOptions.write = true;
+            } catch ( OutOfIDSpaceException e ) {
+                helper.error("Cannot allocate range: %s", e.getMessage());
             }
-
-            helper.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
-                    rng.getName());
-            ioOptions.write = true;
         }
 
         if ( listOptions.showList ) {

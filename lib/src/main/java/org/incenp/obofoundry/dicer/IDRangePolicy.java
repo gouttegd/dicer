@@ -280,17 +280,17 @@ public class IDRangePolicy {
      * @param name    The name of the user the range is allocated to.
      * @param comment A comment associated with the range (may be {@code null}.
      * @param size    The size of the range to allocate.
-     * @return The newly allocated range, or {@code null} if no available range of
-     *         the desired size was available.
+     * @return The newly allocated range.
+     * @throws OutOfIDSpaceException If there is no available ID space large enough
+     *                             for the requested range.
      */
-    public IDRange addRange(String name, String comment, int size) {
-        IDRange rng = null;
-
+    public IDRange addRange(String name, String comment, int size) throws OutOfIDSpaceException {
         int start = findOpenRange(size);
-        if ( start != -1 ) {
-            rng = new IDRange(++lastId, name, comment, start, size);
-            ranges.put(name, rng);
+        if ( start == -1 ) {
+            throw new OutOfIDSpaceException("Not enough space for a %d-wide range", size);
         }
+        IDRange rng = new IDRange(++lastId, name, comment, start, size);
+        ranges.put(name, rng);
 
         return rng;
     }

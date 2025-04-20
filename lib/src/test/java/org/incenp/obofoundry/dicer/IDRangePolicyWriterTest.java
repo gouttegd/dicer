@@ -30,8 +30,12 @@ public class IDRangePolicyWriterTest {
     @Test
     void testSimpleWrite() throws IOException {
         IDRangePolicy policy = new IDRangePolicy("myont");
-        policy.addRange("user1", null, 10000);
-        policy.addRange("user2", "Range for user 2", 20000);
+        try {
+            policy.addRange("user1", null, 10000);
+            policy.addRange("user2", "Range for user 2", 20000);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
 
         assertWrittenAsExpected(policy, "myont", null);
     }
