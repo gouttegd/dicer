@@ -126,6 +126,15 @@ public class IDRangePolicy {
     }
 
     /**
+     * Gets a format string suitable to mind IDs conforming to this policy.
+     * 
+     * @return The policy’s format string.
+     */
+    public String getFormat() {
+        return prefix + String.format("%%0%dd", width);
+    }
+
+    /**
      * Gets the number of digits that IDs to be created with this policy should
      * have.
      * 

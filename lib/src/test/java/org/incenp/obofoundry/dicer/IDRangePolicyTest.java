@@ -46,6 +46,12 @@ public class IDRangePolicyTest {
     }
 
     @Test
+    void testPolicyFormat() {
+        IDRangePolicy policy = new IDRangePolicy("myont");
+        Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_%07d", policy.getFormat());
+    }
+
+    @Test
     void testCreatingFirstRange() {
         IDRangePolicy policy = new IDRangePolicy("myont");
         try {
