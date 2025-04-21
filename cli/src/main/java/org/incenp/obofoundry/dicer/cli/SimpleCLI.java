@@ -1,6 +1,6 @@
 /*
  * Dicer - OBO ID range library
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,155 +18,108 @@
 
 package org.incenp.obofoundry.dicer.cli;
 
-import java.io.IOException;
-import java.util.List;
+import java.io.PrintStream;
 
-import org.incenp.obofoundry.dicer.IDRange;
-import org.incenp.obofoundry.dicer.IDRangePolicy;
-import org.incenp.obofoundry.dicer.IDRangePolicyReader;
-import org.incenp.obofoundry.dicer.IDRangePolicyWriter;
-import org.incenp.obofoundry.dicer.InvalidIDRangePolicyException;
-import org.incenp.obofoundry.dicer.OutOfIDSpaceException;
-
-import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.ParseResult;
 
 /**
- * A command-line interface to manipulate ID range policies.
+ * A command-line utility to manipulate IDs and ID policies.
  */
 @Command(name = "dicer-cli",
-         mixinStandardHelpOptions = true,
-         versionProvider = CommandHelper.class,
-         description = "Manipulate OBO Foundry-style ID range policies.",
-         footer = "Report bugs to <dgouttegattat@incenp.org>.",
+         description = "Dicer ID library utility",
          optionListHeading = "%nGeneral options:%n",
-         footerHeading = "%n")
-public class SimpleCLI implements Runnable {
-
-    @ArgGroup(exclusive = false, multiplicity = "1", heading = "%nI/O options:%n")
-    private IOOptions ioOptions = new IOOptions();
-
-    private static class IOOptions {
-        @Parameters(index = "0", paramLabel = "FILE",
-                description = "The policy file to read.")
-        String inputFile;
-
-        String outputFile;
-
-        @Option(names = { "-o", "--output"},
-                paramLabel = "FILE",
-                description = "Write the policy to FILE. Default is to write back to the original input file.")
-        public void setOutputFile(String file) {
-            outputFile = file;
-            write = true;
-        }
-
-        public String getOutputFile() {
-            return outputFile != null ? outputFile : inputFile;
-        }
-
-        @Option(names = { "-s", "--save"}, defaultValue = "false",
-                description = "Force writing the policy. Implied by --output and any option that modifies the policy.")
-        boolean write;
-    }
-
-    @ArgGroup(validate = false, heading = "%nEditing options:%n")
-    private EditOptions editOptions = new EditOptions();
-
-    private static class EditOptions {
-        @Option(names = "--add-range",
-                paramLabel = "USER",
-                description = "Add a new range allocated to USER.")
-        String newRange;
-
-        @Option(names = "--size",
-                paramLabel = "SIZE", defaultValue = "10000",
-                description = "The size of the range to add (default: 10000).")
-        int size;
-    }
-
-    @ArgGroup(validate = false, heading = "%nListing options:%n")
-    private ListOptions listOptions = new ListOptions();
-
-    private static class ListOptions {
-        @Option(names = { "-l", "--list" },
-                defaultValue = "false",
-                description = "Print a list of the ranges.")
-        boolean showList;
-
-        @Option(names = "--show-unallocated", defaultValue = "false",
-                description = "When listing ranges, also show unallocated ranges.")
-        boolean showUnallocated;
-
-        @Option(names = "--min-size", paramLabel = "N", defaultValue = "10",
-                description = "Do not show ranges smaller than N (default: 10; set to zero to show all ranges).")
-        int minSize;
-    }
-
-    private CommandHelper helper = new CommandHelper();
-    private IDRangePolicy policy = null;
-
+         commandListHeading = "%nCommands:%n",
+         footer = "Report bugs to <dgouttegattat@incenp.org>.",
+         footerHeading = "%n",
+         mixinStandardHelpOptions = true,
+         versionProvider = SimpleCLI.class)
+public class SimpleCLI implements IVersionProvider, IExecutionExceptionHandler
+{
     public static void main(String[] args) {
         System.exit(run(args));
     }
 
     /*
-     * The real entry point. It is separate from the main method so that it can be
-     * called from the test suite without terminating the testing process.
+     * This is the real entry point. It is separate from the main method above so
+     * that it can be called from the test suite without terminating the testing
+     * process.
      */
     public static int run(String[] args) {
         SimpleCLI cli = new SimpleCLI();
-        int rc = new picocli.CommandLine(cli).setExecutionExceptionHandler(cli.helper)
-                .setCaseInsensitiveEnumValuesAllowed(true).setUsageHelpLongOptionsMaxWidth(23)
-                .setUsageHelpAutoWidth(true).execute(args);
+        int rc = new picocli.CommandLine(cli)
+                .setExecutionExceptionHandler(cli)
+                .setCaseInsensitiveEnumValuesAllowed(true)
+                .setUsageHelpLongOptionsMaxWidth(23)
+                .setUsageHelpAutoWidth(true)
+                .addSubcommand(new PolicyTool())
+                .addSubcommand(new HelpCommand())
+                .execute(args);
         return rc;
     }
 
     @Override
-    public void run() {
-        try {
-            policy = new IDRangePolicyReader().read(ioOptions.inputFile);
-        } catch ( IOException | InvalidIDRangePolicyException e ) {
-            helper.error("Cannot read policy file: %s", e.getMessage());
+    public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult fullParseResult)
+            throws Exception {
+        if ( ex.getMessage() != null ) {
+            print(System.err, ex.getMessage());
+        } else {
+            print(System.err, "Unknown exception: %s", ex.toString());
         }
-
-        if ( editOptions.newRange != null ) {
-            try {
-                IDRange rng = policy.addRange(editOptions.newRange, null, editOptions.size);
-                helper.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
-                        rng.getName());
-                ioOptions.write = true;
-            } catch ( OutOfIDSpaceException e ) {
-                helper.error("Cannot allocate range: %s", e.getMessage());
-            }
-        }
-
-        if ( listOptions.showList ) {
-            List<IDRange> ranges = policy.getRangesByLowerBound();
-            if ( listOptions.showUnallocated ) {
-                ranges.addAll(policy.getUnallocatedRanges());
-                ranges.sort((a, b) -> Integer.compare(a.getLowerBound(), b.getLowerBound()));
-            }
-            for ( IDRange rng : ranges ) {
-                printRange(rng);
-            }
-        }
-
-        if ( ioOptions.write ) {
-            try {
-                new IDRangePolicyWriter().write(policy, ioOptions.getOutputFile());
-            } catch ( IOException e ) {
-                helper.error("Cannot write policy file: %s", e.getMessage());
-            }
-        }
+        return commandLine.getCommandSpec().exitCodeOnExecutionException();
     }
 
-    private void printRange(IDRange range) {
-        if ( range.getSize() < listOptions.minSize ) {
-            return;
-        }
-        System.out.printf("%s: [%d..%d)\n", range.getName(), range.getLowerBound(), range.getUpperBound());
+    @Override
+    public String[] getVersion() throws Exception {
+        return new String[] {
+                "dicer-cli (Dicer " + SimpleCLI.class.getPackage().getImplementationVersion() + ")",
+                "Copyright © 2025 Damien Goutte-Gattat", "",
+                "This program is released under the GNU General Public License.",
+                "See the COPYING file or <http://www.gnu.org/licenses/gpl.html>." };
+    }
+
+    /**
+     * Prints an informative message on standard output.
+     * 
+     * @param format The message to print, as a format string.
+     * @param args   Arguments for the format specifiers inside the message.
+     */
+    public void info(String format, Object... args) {
+        print(System.out, format, args);
+    }
+
+    /**
+     * Prints a warning message on standard error output.
+     * 
+     * @param format The message to print, as a format string.
+     * @param args   Arguments for the format specifiers inside the message.
+     */
+    public void warn(String format, Object... args) {
+        print(System.err, format, args);
+    }
+
+    /**
+     * Prints an error message on standard error output and exits the application.
+     * 
+     * @param format The message to print, as a format string.
+     * @param args   Arguments for the format specifiers inside the message.
+     */
+    public void error(String format, Object... args) {
+        // Throw an exception to interrupt the application; the exception will be caught
+        // by PicoCLI and the error message will be displayed by the exception handler.
+        throw new RuntimeException(String.format(format, args));
+    }
+
+    /*
+     * Common code for the info/warn/error methods.
+     */
+    private void print(PrintStream stream, String format, Object... args) {
+        stream.append("dicer-cli: ");
+        stream.printf(format, args);
+        stream.append('\n');
     }
 }
