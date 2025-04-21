@@ -224,6 +224,23 @@ public class IDRangePolicy {
     }
 
     /**
+     * Finds a range allocated to any of the given users.
+     * 
+     * @param names A list of user names for which to retrieve a range.
+     * @return Optional of the first range found, or Optional.empty if the policy
+     *         does not contain any range for any of the provided names.
+     */
+    public Optional<IDRange> findAnyRange(List<String> names) {
+        for ( String name : names ) {
+            IDRange rng = ranges.get(name);
+            if ( rng != null ) {
+                return Optional.of(rng);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Gets the range allocated to a given user.
      * <p>
      * This is similar to {@link #findRange(String)}, except that it assumes the
@@ -240,6 +257,28 @@ public class IDRangePolicy {
             throw new NoSuchIDRangeException(name);
         }
         return rng;
+    }
+
+    /**
+     * Gets a range allocated to any of the given users.
+     * <p>
+     * This is similar to {@link #findAnyRange(List)}, except that it assumes that
+     * at least one of the ranges exists and consequently throws an exception if no
+     * range is found.
+     * 
+     * @param names A list of user names for which to retrieve a range.
+     * @return The first range found.
+     * @throws NoSuchIDRangeException If there is no range associated to any of the
+     *                                given names.
+     */
+    public IDRange getAnyRange(List<String> names) throws NoSuchIDRangeException {
+        for ( String name : names ) {
+            IDRange rng = ranges.get(name);
+            if ( rng != null ) {
+                return rng;
+            }
+        }
+        throw new NoSuchIDRangeException();
     }
 
     /**

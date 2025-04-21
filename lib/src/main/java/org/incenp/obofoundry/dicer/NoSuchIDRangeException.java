@@ -45,4 +45,11 @@ public class NoSuchIDRangeException extends IDException {
         super("No range '%s' found in ID policy", name);
     }
 
+    /**
+     * Creates a new instance with a generic error message.
+     */
+    public NoSuchIDRangeException() {
+        super("No suitable range found in ID policy");
+    }
+
 }

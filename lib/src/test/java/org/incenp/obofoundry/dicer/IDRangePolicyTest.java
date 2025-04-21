@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.dicer;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -157,6 +158,34 @@ public class IDRangePolicyTest {
             Assertions.fail("Expected NoSuchIDRangeException not thrown");
         } catch ( NoSuchIDRangeException e ) {
             Assertions.assertEquals("No range 'user4' found in ID policy", e.getMessage());
+        }
+    }
+
+    @Test
+    void testLookupAnyName() {
+        IDRangePolicy policy = getTestPolicy();
+
+        Assertions.assertEquals(10000,
+                policy.findAnyRange(Arrays.asList("user4", "user2", "user3")).get().getLowerBound());
+        Assertions.assertFalse(policy.findAnyRange(Arrays.asList("user4", "user5")).isPresent());
+    }
+
+    @Test
+    void testLookupAnyNameWithException() {
+        IDRangePolicy policy = getTestPolicy();
+
+        try {
+            Assertions.assertEquals(10000,
+                    policy.getAnyRange(Arrays.asList("user4", "user2", "user3")).getLowerBound());
+        } catch ( NoSuchIDRangeException e ) {
+            Assertions.fail(e);
+        }
+
+        try {
+            policy.getAnyRange(Arrays.asList("user4", "user5"));
+            Assertions.fail("Expected NoSuchIDRangeException not thrown");
+        } catch ( NoSuchIDRangeException e ) {
+            Assertions.assertEquals("No suitable range found in ID policy", e.getMessage());
         }
     }
 
