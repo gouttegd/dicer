@@ -1,0 +1,119 @@
+/*
+ * Dicer - OBO ID range library
+ * Copyright © 2025 Damien Goutte-Gattat
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.incenp.obofoundry.dicer;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
+public class RandomizedIDGeneratorTest {
+
+    private OWLOntology ontology;
+
+    @BeforeEach
+    private void prepareOntology() {
+        OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
+        try {
+            ontology = mgr.createOntology();
+        } catch ( OWLOntologyCreationException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testGenerateIDWithinRange() {
+        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 2000);
+
+        try {
+            for ( int i = 0; i < 10; i++ ) {
+                String id = gen.nextID();
+                Assertions.assertTrue(id.startsWith("https://example.org/0001"));
+            }
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testUsingIDPolicy() {
+        IDRangePolicy policy = new IDRangePolicy("myont");
+        try {
+            policy.addRange("user1", null, 1000);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
+
+        try {
+            IAutoIDGenerator gen = new SequentialIDGenerator(ontology, policy, "user1");
+            String id = gen.nextID();
+            Assertions.assertTrue(id.startsWith("http://purl.obolibrary.org/obo/MYONT_0000"));
+        } catch ( IDException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testAvoidUsedLowerIDs() {
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        for ( int i = 1000; i < 1100; i++ ) {
+            String id = String.format("https://example.org/%07d", i);
+            ontology.getOWLOntologyManager().addAxiom(ontology,
+                    factory.getOWLDeclarationAxiom(factory.getOWLClass(IRI.create(id))));
+        }
+
+        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 2000);
+
+        try {
+            for ( int i = 0; i < 10; i++ ) {
+                String id = gen.nextID();
+                Assertions.assertTrue(id.startsWith("https://example.org/0001"));
+                Assertions.assertFalse(id.startsWith("https://example/org/00010"));
+            }
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testFailUponOutOfIDSpace() {
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        for ( int i = 1000; i < 1100; i++ ) {
+            String id = String.format("https://example.org/%07d", i);
+            ontology.getOWLOntologyManager().addAxiom(ontology,
+                    factory.getOWLDeclarationAxiom(factory.getOWLClass(IRI.create(id))));
+        }
+
+        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 1200);
+
+        try {
+            for ( int i = 0; i < 100; i++ ) {
+                gen.nextID();
+            }
+            Assertions.fail("Expected OutOfIDSpaceException not thrown", null);
+        } catch ( OutOfIDSpaceException e ) {
+            Assertions.assertEquals("No available ID in range", e.getMessage());
+        }
+    }
+}
