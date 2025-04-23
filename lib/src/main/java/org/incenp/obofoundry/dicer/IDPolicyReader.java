@@ -37,44 +37,43 @@ import org.semanticweb.owlapi.util.OWLDataVisitorExAdapter;
 import org.semanticweb.owlapi.vocab.OWLFacet;
 
 /**
- * A class to read an ID range policy from an ontology file.
+ * A class to read an ID policy from an ontology file.
  */
-public class IDRangePolicyReader {
+public class IDPolicyReader {
 
     private RangeDatatypeVisitor visitor = new RangeDatatypeVisitor();
 
     /**
-     * Parses the given file into an ID range policy.
+     * Parses the given file into an ID policy.
      * 
      * @param filename The name of the file to parse.
      * @return The policy read from the file.
-     * @throws IOException                   If any I/O error occurs when trying to
-     *                                       read the file.
-     * @throws InvalidIDRangePolicyException If the file does not contain a valid
-     *                                       policy.
+     * @throws IOException              If any I/O error occurs when trying to read
+     *                                  the file.
+     * @throws InvalidIDPolicyException If the file does not contain a valid policy.
      */
-    public IDRangePolicy read(String filename) throws IOException, InvalidIDRangePolicyException {
+    public IDPolicy read(String filename) throws IOException, InvalidIDPolicyException {
         OWLOntology ont = null;
         try {
             ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(filename));
         } catch ( OWLOntologyCreationIOException e ) {
             throw new IOException("Cannot load ID range policy", e);
         } catch ( OWLOntologyCreationException e ) {
-            throw new InvalidIDRangePolicyException("Cannot load ID range policy", e);
+            throw new InvalidIDPolicyException("Cannot load ID range policy", e);
         }
 
         return fromOntology(ont);
     }
 
     /**
-     * Extracts an ID range policy from the given ontology.
+     * Extracts an ID policy from the given ontology.
      * 
-     * @param ontology An ontology that describes the ID range policy.
+     * @param ontology An ontology that describes the ID policy.
      * @return The corresponding policy.
-     * @throws InvalidIDRangePolicyException If the ontology does not describe a
-     *                                       valid policy.
+     * @throws InvalidIDPolicyException If the ontology does not describe a valid
+     *                                  policy.
      */
-    public IDRangePolicy fromOntology(OWLOntology ontology) throws InvalidIDRangePolicyException {
+    public IDPolicy fromOntology(OWLOntology ontology) throws InvalidIDPolicyException {
         String name = getPolicyName(ontology.getOntologyID().getOntologyIRI().orNull());
         String prefix = null;
         String prefixName = null;
@@ -95,19 +94,19 @@ public class IDRangePolicyReader {
                 try {
                     width = value.asLiteral().get().parseInteger();
                 } catch ( NumberFormatException e ) {
-                    throw new InvalidIDRangePolicyException("Invalid ID width: %s",
+                    throw new InvalidIDPolicyException("Invalid ID width: %s",
                             value.asLiteral().get().getLiteral());
                 }
             }
         }
         if ( prefix == null ) {
-            throw new InvalidIDRangePolicyException("Missing IRI prefix");
+            throw new InvalidIDPolicyException("Missing IRI prefix");
         }
         if ( prefixName == null ) {
-            throw new InvalidIDRangePolicyException("Missing prefix name");
+            throw new InvalidIDPolicyException("Missing prefix name");
         }
 
-        IDRangePolicy policy = new IDRangePolicy(name, prefix, prefixName, width);
+        IDPolicy policy = new IDPolicy(name, prefix, prefixName, width);
         for ( OWLDatatype datatype : ontology.getDatatypesInSignature() ) {
             rangeFromDatatype(policy, ontology, datatype);
         }
@@ -118,24 +117,24 @@ public class IDRangePolicyReader {
     /*
      * Gets the policy name from an ontology IRI.
      */
-    private String getPolicyName(IRI ontologyIRI) throws InvalidIDRangePolicyException {
+    private String getPolicyName(IRI ontologyIRI) throws InvalidIDPolicyException {
         if ( ontologyIRI == null ) {
-            throw new InvalidIDRangePolicyException("Missing policy name");
+            throw new InvalidIDPolicyException("Missing policy name");
         }
         String s = ontologyIRI.toString();
         int lastSlash = s.lastIndexOf('/');
         if ( !s.endsWith("-idranges.owl") || lastSlash == -1 ) {
-            throw new InvalidIDRangePolicyException("Invalid policy name: %s", s);
+            throw new InvalidIDPolicyException("Invalid policy name: %s", s);
         }
 
         return s.substring(0, lastSlash);
     }
 
     /*
-     * Parses a datattype definition into a range.
+     * Parses a datatype definition into a range.
      */
-    private void rangeFromDatatype(IDRangePolicy policy, OWLOntology ontology, OWLDatatype datatype)
-            throws InvalidIDRangePolicyException {
+    private void rangeFromDatatype(IDPolicy policy, OWLOntology ontology, OWLDatatype datatype)
+            throws InvalidIDPolicyException {
         String name = null;
         String comment = null;
 
@@ -164,15 +163,15 @@ public class IDRangePolicyReader {
     /*
      * Extracts the numerical ID of a range from the datatype IRI.
      */
-    private int getRangeID(String iri) throws InvalidIDRangePolicyException {
+    private int getRangeID(String iri) throws InvalidIDPolicyException {
         int lastSlash = iri.lastIndexOf('/');
         if ( lastSlash == -1 ) {
-            throw new InvalidIDRangePolicyException("Invalid range ID: %s", iri);
+            throw new InvalidIDPolicyException("Invalid range ID: %s", iri);
         }
         try {
             return Integer.parseInt(iri.substring(lastSlash + 1));
         } catch ( NumberFormatException e ) {
-            throw new InvalidIDRangePolicyException("Invalid range ID: %s", iri);
+            throw new InvalidIDPolicyException("Invalid range ID: %s", iri);
         }
     }
 

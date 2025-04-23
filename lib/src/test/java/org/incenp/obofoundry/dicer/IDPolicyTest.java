@@ -24,11 +24,11 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class IDRangePolicyTest {
+public class IDPolicyTest {
 
     @Test
     void testSimpleConstructor() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         Assertions.assertEquals("http://purl.obolibrary.org/obo/myont", policy.getName());
         Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_", policy.getPrefix());
         Assertions.assertEquals("MYONT", policy.getPrefixName());
@@ -38,7 +38,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testFullConstructor() {
-        IDRangePolicy policy = new IDRangePolicy("https://example.org/myont", "https://example.org/MYONT_", "MYONT", 8);
+        IDPolicy policy = new IDPolicy("https://example.org/myont", "https://example.org/MYONT_", "MYONT", 8);
         Assertions.assertEquals("https://example.org/myont", policy.getName());
         Assertions.assertEquals("https://example.org/MYONT_", policy.getPrefix());
         Assertions.assertEquals("MYONT", policy.getPrefixName());
@@ -48,13 +48,13 @@ public class IDRangePolicyTest {
 
     @Test
     void testPolicyFormat() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_%07d", policy.getFormat());
     }
 
     @Test
     void testCreatingFirstRange() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             IDRange rng = policy.addRange("user1", null, 10000);
 
@@ -68,7 +68,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testNotEnoughSpace() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         // Create a range that takes up most of the available space
         try {
             policy.addRange("user1", null, 9000000);
@@ -83,7 +83,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testNotEnoughSpaceException() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         // Create a range that takes up most of the available space
         try {
             policy.addRange("user1", null, 9000000);
@@ -107,12 +107,12 @@ public class IDRangePolicyTest {
 
     @Test
     void testFindingIntermediateRange() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange(1, "user1", null, 0, 100000);
             policy.addRange(2, "user2", null, 150000, 200000);
             policy.addRange(3, "user3", null, 300000, 500000);
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.fail(e);
         }
 
@@ -123,7 +123,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testLookupByName() {
-        IDRangePolicy policy = getTestPolicy();
+        IDPolicy policy = getTestPolicy();
 
         Assertions.assertEquals(0, policy.getRangeFor("user1").getLowerBound());
         Assertions.assertEquals(10000, policy.getRangeFor("user2").getLowerBound());
@@ -133,7 +133,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testLookupByNameWithOptional() {
-        IDRangePolicy policy = getTestPolicy();
+        IDPolicy policy = getTestPolicy();
 
         Assertions.assertEquals(0, policy.findRange("user1").get().getLowerBound());
         Assertions.assertEquals(10000, policy.findRange("user2").get().getLowerBound());
@@ -143,7 +143,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testLookupByNameWithException() {
-        IDRangePolicy policy = getTestPolicy();
+        IDPolicy policy = getTestPolicy();
 
         try {
             Assertions.assertEquals(0, policy.getRange("user1").getLowerBound());
@@ -163,7 +163,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testLookupAnyName() {
-        IDRangePolicy policy = getTestPolicy();
+        IDPolicy policy = getTestPolicy();
 
         Assertions.assertEquals(10000,
                 policy.findAnyRange(Arrays.asList("user4", "user2", "user3")).get().getLowerBound());
@@ -172,7 +172,7 @@ public class IDRangePolicyTest {
 
     @Test
     void testLookupAnyNameWithException() {
-        IDRangePolicy policy = getTestPolicy();
+        IDPolicy policy = getTestPolicy();
 
         try {
             Assertions.assertEquals(10000,
@@ -191,12 +191,12 @@ public class IDRangePolicyTest {
 
     @Test
     void testRangesByID() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange(1, "user1", null, 0, 10000);
             policy.addRange(3, "user2", null, 10000, 20000);
             policy.addRange(2, "user3", null, 20000, 30000);
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.fail(e);
         }
 
@@ -209,12 +209,12 @@ public class IDRangePolicyTest {
 
     @Test
     void testRangesByLowerBound() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange(1, "user1", null, 0, 10000);
             policy.addRange(2, "user2", null, 20000, 30000);
             policy.addRange(3, "user3", null, 10000, 20000);
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.fail(e);
         }
 
@@ -227,24 +227,24 @@ public class IDRangePolicyTest {
 
     @Test
     void testOverlappingRanges() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange(1, "user1", null, 0, 10000);
             policy.addRange(2, "user2", null, 5000, 15000);
             Assertions.fail("Overlapping range not detected");
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.assertEquals("Range [5000..15000) for \"user2\" overlaps with range [0..10000) for \"user1\"",
                     e.getMessage());
         }
     }
 
-    private IDRangePolicy getTestPolicy() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+    private IDPolicy getTestPolicy() {
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange(1, "user1", null, 0, 10000);
             policy.addRange(2, "user2", null, 10000, 20000);
             policy.addRange(3, "user3", null, 20000, 30000);
-        } catch (InvalidIDRangePolicyException e) {
+        } catch (InvalidIDPolicyException e) {
             Assertions.fail(e);
         }
         return policy;

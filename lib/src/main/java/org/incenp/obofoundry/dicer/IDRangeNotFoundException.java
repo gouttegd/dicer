@@ -20,7 +20,7 @@ package org.incenp.obofoundry.dicer;
 
 /**
  * An exception that is thrown when a requested range cannot be found in a ID
- * range policy.
+ * policy.
  */
 public class IDRangeNotFoundException extends IDException {
 

@@ -28,9 +28,9 @@ import java.io.Writer;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 /**
- * A class to serialise an ID range policy to file.
+ * A class to serialise an ID policy to file.
  */
-public class IDRangePolicyWriter {
+public class IDPolicyWriter {
 
     private Writer writer;
 
@@ -42,7 +42,7 @@ public class IDRangePolicyWriter {
      * @throws IOException If any I/O error occurs when attempting to write to the
      *                     file.
      */
-    public void write(IDRangePolicy policy, String filename) throws IOException {
+    public void write(IDPolicy policy, String filename) throws IOException {
         write(policy, new FileWriter(filename));
         writer.close();
     }
@@ -55,7 +55,7 @@ public class IDRangePolicyWriter {
      * @throws IOException If any I/O error occurs when attempting to write to the
      *                     file.
      */
-    public void write(IDRangePolicy policy, File file) throws IOException {
+    public void write(IDPolicy policy, File file) throws IOException {
         write(policy, new FileWriter(file));
         writer.close();
     }
@@ -68,7 +68,7 @@ public class IDRangePolicyWriter {
      * @throws IOException If any I/O error occurs when attempting to write to the
      *                     stream.
      */
-    public void write(IDRangePolicy policy, OutputStream stream) throws IOException {
+    public void write(IDPolicy policy, OutputStream stream) throws IOException {
         write(policy, new OutputStreamWriter(stream));
     }
 
@@ -80,7 +80,7 @@ public class IDRangePolicyWriter {
      * @throws IOException If any I/O error occurs when attempting to write to the
      *                     writer object.
      */
-    public void write(IDRangePolicy policy, Writer writer) throws IOException {
+    public void write(IDPolicy policy, Writer writer) throws IOException {
         this.writer = writer;
 
         /*
@@ -123,7 +123,7 @@ public class IDRangePolicyWriter {
         writer.flush();
     }
 
-    private String getOntologyIRI(IDRangePolicy policy) {
+    private String getOntologyIRI(IDPolicy policy) {
         return String.format("%s/%s-idranges.owl", policy.getName(), policy.getPrefixName().toLowerCase());
     }
 

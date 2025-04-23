@@ -19,9 +19,9 @@
 package org.incenp.obofoundry.dicer;
 
 /**
- * An exception that is thrown when a ID range policy is invalid.
+ * An exception that is thrown when a ID policy is invalid.
  */
-public class InvalidIDRangePolicyException extends IDException {
+public class InvalidIDPolicyException extends IDException {
 
     private static final long serialVersionUID = 2401919726320928281L;
 
@@ -31,7 +31,7 @@ public class InvalidIDRangePolicyException extends IDException {
      * @param msg  A message describing the error.
      * @param args Arguments to substitute in the {@code msg} format string.
      */
-    public InvalidIDRangePolicyException(String msg, Object... args) {
+    public InvalidIDPolicyException(String msg, Object... args) {
         super(msg, args);
     }
 }

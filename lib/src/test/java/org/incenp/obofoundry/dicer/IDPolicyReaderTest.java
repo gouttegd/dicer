@@ -23,17 +23,17 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class IDRangePolicyReaderTest {
+public class IDPolicyReaderTest {
 
     @Test
     void testReadUberonPolicy() {
-        IDRangePolicyReader p = new IDRangePolicyReader();
-        IDRangePolicy policy = null;
+        IDPolicyReader p = new IDPolicyReader();
+        IDPolicy policy = null;
         try {
             policy = p.read("src/test/resources/input/uberon-idranges.owl");
         } catch ( IOException e ) {
             Assertions.fail(e);
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.fail(e);
         }
 
@@ -51,13 +51,13 @@ public class IDRangePolicyReaderTest {
 
     @Test
     void testReadSimplePolicy() {
-        IDRangePolicyReader p = new IDRangePolicyReader();
-        IDRangePolicy policy = null;
+        IDPolicyReader p = new IDPolicyReader();
+        IDPolicy policy = null;
         try {
             policy = p.read("src/test/resources/input/myont-idranges.owl");
         } catch ( IOException e ) {
             Assertions.fail(e);
-        } catch ( InvalidIDRangePolicyException e ) {
+        } catch ( InvalidIDPolicyException e ) {
             Assertions.fail(e);
         }
 

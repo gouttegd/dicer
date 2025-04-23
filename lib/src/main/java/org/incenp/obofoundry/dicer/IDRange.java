@@ -19,7 +19,7 @@
 package org.incenp.obofoundry.dicer;
 
 /**
- * Represents an ID range in an ID range policy.
+ * Represents an ID range in an ID policy.
  */
 public class IDRange {
 

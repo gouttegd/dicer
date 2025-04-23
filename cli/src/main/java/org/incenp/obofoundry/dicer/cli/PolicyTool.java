@@ -21,12 +21,12 @@ package org.incenp.obofoundry.dicer.cli;
 import java.io.IOException;
 import java.util.List;
 
+import org.incenp.obofoundry.dicer.IDPolicy;
+import org.incenp.obofoundry.dicer.IDPolicyReader;
+import org.incenp.obofoundry.dicer.IDPolicyWriter;
 import org.incenp.obofoundry.dicer.IDRange;
 import org.incenp.obofoundry.dicer.IDRangeNotFoundException;
-import org.incenp.obofoundry.dicer.IDRangePolicy;
-import org.incenp.obofoundry.dicer.IDRangePolicyReader;
-import org.incenp.obofoundry.dicer.IDRangePolicyWriter;
-import org.incenp.obofoundry.dicer.InvalidIDRangePolicyException;
+import org.incenp.obofoundry.dicer.InvalidIDPolicyException;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -35,10 +35,10 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 /**
- * A command to manipulate ID range policy files.
+ * A command to manipulate ID policy files.
  */
 @Command(name = "policy",
-        description = "Manipulate OBO Foundry-style ID range policies.",
+        description = "Manipulate OBO Foundry-style ID policies.",
         optionListHeading = "%nGeneral options:%n",
         footer = "Report bugs to <dgouttegattat@incenp.org>.",
         footerHeading = "%n")
@@ -111,13 +111,13 @@ public class PolicyTool implements Runnable {
         int minSize;
     }
 
-    private IDRangePolicy policy = null;
+    private IDPolicy policy = null;
 
     @Override
     public void run() {
         try {
-            policy = new IDRangePolicyReader().read(ioOptions.inputFile);
-        } catch ( InvalidIDRangePolicyException | IOException e ) {
+            policy = new IDPolicyReader().read(ioOptions.inputFile);
+        } catch ( InvalidIDPolicyException | IOException e ) {
             cli.error("Cannot read policy file: %s", e.getMessage());
         }
 
@@ -147,7 +147,7 @@ public class PolicyTool implements Runnable {
 
         if ( ioOptions.write ) {
             try {
-                new IDRangePolicyWriter().write(policy, ioOptions.getOutputFile());
+                new IDPolicyWriter().write(policy, ioOptions.getOutputFile());
             } catch ( IOException e ) {
                 cli.error("Cannot write policy file: %s", e.getMessage());
             }

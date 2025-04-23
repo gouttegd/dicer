@@ -25,11 +25,11 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class IDRangePolicyWriterTest {
+public class IDPolicyWriterTest {
 
     @Test
     void testSimpleWrite() throws IOException {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange("user1", null, 10000);
             policy.addRange("user2", "Range for user 2", 20000);
@@ -40,7 +40,7 @@ public class IDRangePolicyWriterTest {
         assertWrittenAsExpected(policy, "myont", null);
     }
 
-    private void assertWrittenAsExpected(IDRangePolicy policy, String expectedBasename, String actualBasename)
+    private void assertWrittenAsExpected(IDPolicy policy, String expectedBasename, String actualBasename)
             throws IOException {
         if ( actualBasename == null ) {
             actualBasename = expectedBasename;
@@ -48,7 +48,7 @@ public class IDRangePolicyWriterTest {
 
         File written = new File("src/test/resources/output/" + actualBasename + "-idranges.owl.out");
         written.getParentFile().mkdir();
-        IDRangePolicyWriter writer = new IDRangePolicyWriter();
+        IDPolicyWriter writer = new IDPolicyWriter();
         writer.write(policy, written);
 
         File expected = new File("src/test/resources/output/" + expectedBasename + "-idranges.owl");

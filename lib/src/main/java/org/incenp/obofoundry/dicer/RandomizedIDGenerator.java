@@ -86,12 +86,12 @@ public class RandomizedIDGenerator implements IAutoIDGenerator {
      * @param signature The OWLSignature to generate IDs for. The signature will be
      *                  checked to ensure the generated IDs do not clash with the
      *                  IDs of existing entities.
-     * @param policy    The ID range policy to use.
+     * @param policy    The ID policy to use.
      * @param rangeName The name of the range within the given policy to use.
      * @throws IDRangeNotFoundException If the policy does not contain any range
      *                                  associated with the specified name.
      */
-    public RandomizedIDGenerator(OWLSignature signature, IDRangePolicy policy, String rangeName)
+    public RandomizedIDGenerator(OWLSignature signature, IDPolicy policy, String rangeName)
             throws IDRangeNotFoundException {
         this(signature, policy.getFormat(), policy.getRange(rangeName));
     }

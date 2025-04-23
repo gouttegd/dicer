@@ -28,7 +28,7 @@ import java.util.Optional;
  * Represents a comprehensive ID range policy, that both describes the expected
  * format of ID and allocates ranges to users.
  */
-public class IDRangePolicy {
+public class IDPolicy {
 
     private String name;
     private String prefix;
@@ -46,7 +46,7 @@ public class IDRangePolicy {
      * 
      * @param projectId The OBO “project ID” (or “short name”) for the ontology.
      */
-    public IDRangePolicy(String projectId) {
+    public IDPolicy(String projectId) {
         this(projectId, 7);
     }
 
@@ -56,7 +56,7 @@ public class IDRangePolicy {
      * @param projectId The OBO “project ID” for the ontology.
      * @param width     The number of digits in IDs.
      */
-    public IDRangePolicy(String projectId, int width) {
+    public IDPolicy(String projectId, int width) {
         this("http://purl.obolibrary.org/obo/" + projectId,
                 "http://purl.obolibrary.org/obo/" + projectId.toUpperCase() + "_", projectId.toUpperCase(), width);
     }
@@ -70,7 +70,7 @@ public class IDRangePolicy {
      * @param prefixName The prefix name for the IDs to generate.
      * @param width      The number of digits in IDs.
      */
-    public IDRangePolicy(String name, String prefix, String prefixName, int width) {
+    public IDPolicy(String name, String prefix, String prefixName, int width) {
         if ( width < 1 || width > 9 ) {
             throw new IllegalArgumentException("Width value out of bounds");
         }
@@ -284,26 +284,25 @@ public class IDRangePolicy {
     /**
      * Adds a pre-defined range.
      * <p>
-     * This is intended for the {@link IDRangePolicyReader} class, to add a range
-     * read from a policy file.
+     * This is intended for the {@link IDPolicyReader} class, to add a range read
+     * from a policy file.
      * 
      * @param id      The ID of the range to add.
      * @param name    The user the range is allocated to.
      * @param comment A comment associated with the range. May be {@code null}.
      * @param lower   The lower bound (inclusive) of the range.
      * @param upper   The upper bound (exclusive) of the range.
-     * @throws InvalidIDRangePolicyException If the range is invalid, or if it
-     *                                       overlaps with another range in the
-     *                                       policy.
+     * @throws InvalidIDPolicyException If the range is invalid, or if it overlaps
+     *                                  with another range in the policy.
      */
     protected void addRange(int id, String name, String comment, int lower, int upper)
-            throws InvalidIDRangePolicyException {
+            throws InvalidIDPolicyException {
         if ( lower < 0 || lower >= upper || upper > maxBound ) {
-            throw new InvalidIDRangePolicyException("Invalid ID range: [%d..%d)", lower, upper);
+            throw new InvalidIDPolicyException("Invalid ID range: [%d..%d)", lower, upper);
         }
         for ( IDRange r : ranges.values() ) {
             if ( !(upper <= r.getLowerBound() || lower >= r.getUpperBound()) ) {
-                throw new InvalidIDRangePolicyException(
+                throw new InvalidIDPolicyException(
                         "Range [%d..%d) for \"%s\" overlaps with range [%d..%d) for \"%s\"", lower, upper, name,
                         r.getLowerBound(), r.getUpperBound(), r.getName());
             }

@@ -59,7 +59,7 @@ public class SequentialIDGeneratorTest {
 
     @Test
     void testUsingIDPolicy() {
-        IDRangePolicy policy = new IDRangePolicy("myont");
+        IDPolicy policy = new IDPolicy("myont");
         try {
             policy.addRange("user1", null, 1000);
         } catch ( IDRangeNotFoundException e ) {
