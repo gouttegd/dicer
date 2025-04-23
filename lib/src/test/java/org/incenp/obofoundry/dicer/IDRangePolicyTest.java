@@ -61,7 +61,7 @@ public class IDRangePolicyTest {
             Assertions.assertNotNull(rng);
             Assertions.assertEquals(0, rng.getLowerBound());
             Assertions.assertEquals(10000, rng.getUpperBound());
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -72,7 +72,7 @@ public class IDRangePolicyTest {
         // Create a range that takes up most of the available space
         try {
             policy.addRange("user1", null, 9000000);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 
@@ -87,20 +87,20 @@ public class IDRangePolicyTest {
         // Create a range that takes up most of the available space
         try {
             policy.addRange("user1", null, 9000000);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 
         try {
             policy.addRange("user2", null, 10000);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 
         try {
             policy.addRange("user3", null, 1000000);
-            Assertions.fail("Expected OutOfIDSpaceException not thrown");
-        } catch ( OutOfIDSpaceException e ) {
+            Assertions.fail("Expected NoSuchIDRangeException not thrown");
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.assertEquals("Not enough space for a 1000000-wide range", e.getMessage());
         }
     }
@@ -149,14 +149,14 @@ public class IDRangePolicyTest {
             Assertions.assertEquals(0, policy.getRange("user1").getLowerBound());
             Assertions.assertEquals(10000, policy.getRange("user2").getLowerBound());
             Assertions.assertEquals(20000, policy.getRange("user3").getLowerBound());
-        } catch ( NoSuchIDRangeException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 
         try {
             policy.getRange("user4");
             Assertions.fail("Expected NoSuchIDRangeException not thrown");
-        } catch ( NoSuchIDRangeException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.assertEquals("No range 'user4' found in ID policy", e.getMessage());
         }
     }
@@ -177,14 +177,14 @@ public class IDRangePolicyTest {
         try {
             Assertions.assertEquals(10000,
                     policy.getAnyRange(Arrays.asList("user4", "user2", "user3")).getLowerBound());
-        } catch ( NoSuchIDRangeException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 
         try {
             policy.getAnyRange(Arrays.asList("user4", "user5"));
             Assertions.fail("Expected NoSuchIDRangeException not thrown");
-        } catch ( NoSuchIDRangeException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.assertEquals("No suitable range found in ID policy", e.getMessage());
         }
     }

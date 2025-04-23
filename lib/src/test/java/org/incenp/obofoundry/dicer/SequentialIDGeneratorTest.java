@@ -62,7 +62,7 @@ public class SequentialIDGeneratorTest {
         IDRangePolicy policy = new IDRangePolicy("myont");
         try {
             policy.addRange("user1", null, 1000);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 

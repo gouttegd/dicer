@@ -22,7 +22,7 @@ package org.incenp.obofoundry.dicer;
  * An exception that is thrown when a requested range cannot be found in a ID
  * range policy.
  */
-public class NoSuchIDRangeException extends IDException {
+public class IDRangeNotFoundException extends IDException {
 
     private static final long serialVersionUID = -4525501693310828709L;
 
@@ -32,7 +32,7 @@ public class NoSuchIDRangeException extends IDException {
      * @param msg  A message describing the error.
      * @param args Arguments to substitute in the {@code msg} format string.
      */
-    public NoSuchIDRangeException(String msg, Object[] args) {
+    public IDRangeNotFoundException(String msg, Object... args) {
         super(msg, args);
     }
 
@@ -41,14 +41,14 @@ public class NoSuchIDRangeException extends IDException {
      * 
      * @param name The name of the range that could not be found in the policy.
      */
-    public NoSuchIDRangeException(String name) {
+    public IDRangeNotFoundException(String name) {
         super("No range '%s' found in ID policy", name);
     }
 
     /**
      * Creates a new instance with a generic error message.
      */
-    public NoSuchIDRangeException() {
+    public IDRangeNotFoundException() {
         super("No suitable range found in ID policy");
     }
 

@@ -33,7 +33,7 @@ public class IDRangePolicyWriterTest {
         try {
             policy.addRange("user1", null, 10000);
             policy.addRange("user2", "Range for user 2", 20000);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
 

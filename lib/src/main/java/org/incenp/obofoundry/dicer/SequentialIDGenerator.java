@@ -80,11 +80,11 @@ public class SequentialIDGenerator implements IAutoIDGenerator {
      *                  IDs of existing entities.
      * @param policy    The ID range policy to use.
      * @param rangeName The name of the range within the given policy to use.
-     * @throws NoSuchIDRangeException If the policy does not contain any range
-     *                                associated with the specified name.
+     * @throws IDRangeNotFoundException If the policy does not contain any range
+     *                                  associated with the specified name.
      */
     public SequentialIDGenerator(OWLOntology signature, IDRangePolicy policy, String rangeName)
-            throws NoSuchIDRangeException {
+            throws IDRangeNotFoundException {
         this(signature, policy.getFormat(), policy.getRange(rangeName));
     }
 

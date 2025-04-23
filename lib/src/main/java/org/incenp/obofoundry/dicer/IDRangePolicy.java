@@ -248,13 +248,13 @@ public class IDRangePolicy {
      * 
      * @param name The name of the user for which to retrieve the range.
      * @return The requested range.
-     * @throws NoSuchIDRangeException If there is no range associated to the given
-     *                                name
+     * @throws IDRangeNotFoundException If there is no range associated to the given
+     *                                  name.
      */
-    public IDRange getRange(String name) throws NoSuchIDRangeException {
+    public IDRange getRange(String name) throws IDRangeNotFoundException {
         IDRange rng = ranges.get(name);
         if ( rng == null ) {
-            throw new NoSuchIDRangeException(name);
+            throw new IDRangeNotFoundException(name);
         }
         return rng;
     }
@@ -268,17 +268,17 @@ public class IDRangePolicy {
      * 
      * @param names A list of user names for which to retrieve a range.
      * @return The first range found.
-     * @throws NoSuchIDRangeException If there is no range associated to any of the
-     *                                given names.
+     * @throws IDRangeNotFoundException If there is no range associated to any of
+     *                                  the given names.
      */
-    public IDRange getAnyRange(List<String> names) throws NoSuchIDRangeException {
+    public IDRange getAnyRange(List<String> names) throws IDRangeNotFoundException {
         for ( String name : names ) {
             IDRange rng = ranges.get(name);
             if ( rng != null ) {
                 return rng;
             }
         }
-        throw new NoSuchIDRangeException();
+        throw new IDRangeNotFoundException();
     }
 
     /**
@@ -349,13 +349,13 @@ public class IDRangePolicy {
      * @param comment A comment associated with the range (may be {@code null}.
      * @param size    The size of the range to allocate.
      * @return The newly allocated range.
-     * @throws OutOfIDSpaceException If there is no available ID space large enough
-     *                             for the requested range.
+     * @throws IDRangeNotFoundException If there is no available ID space large
+     *                                  enough for the requested range.
      */
-    public IDRange addRange(String name, String comment, int size) throws OutOfIDSpaceException {
+    public IDRange addRange(String name, String comment, int size) throws IDRangeNotFoundException {
         int start = findOpenRange(size);
         if ( start == -1 ) {
-            throw new OutOfIDSpaceException("Not enough space for a %d-wide range", size);
+            throw new IDRangeNotFoundException("Not enough space for a %d-wide range", size);
         }
         IDRange rng = new IDRange(++lastId, name, comment, start, size);
         ranges.put(name, rng);

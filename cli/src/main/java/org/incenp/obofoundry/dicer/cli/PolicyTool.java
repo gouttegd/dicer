@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.incenp.obofoundry.dicer.IDRange;
+import org.incenp.obofoundry.dicer.IDRangeNotFoundException;
 import org.incenp.obofoundry.dicer.IDRangePolicy;
 import org.incenp.obofoundry.dicer.IDRangePolicyReader;
 import org.incenp.obofoundry.dicer.IDRangePolicyWriter;
 import org.incenp.obofoundry.dicer.InvalidIDRangePolicyException;
-import org.incenp.obofoundry.dicer.OutOfIDSpaceException;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -127,7 +127,7 @@ public class PolicyTool implements Runnable {
                 cli.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
                         rng.getName());
                 ioOptions.write = true;
-            } catch ( OutOfIDSpaceException e ) {
+            } catch ( IDRangeNotFoundException e ) {
                 cli.error("Cannot allocate range: %s", e.getMessage());
             }
         }
