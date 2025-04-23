@@ -19,9 +19,9 @@
 package org.incenp.obofoundry.dicer;
 
 /**
- * An exception that is thrown when a ID range policy runs out of available IDs.
+ * An exception that is thrown when an ID cannot be found for any reason.
  */
-public class OutOfIDSpaceException extends IDException {
+public class IDNotFoundException extends IDException {
 
     private static final long serialVersionUID = -4020992850991980598L;
 
@@ -31,7 +31,7 @@ public class OutOfIDSpaceException extends IDException {
      * @param msg  A message describing the error.
      * @param args Arguments to substitute in the {@code msg} format string.
      */
-    public OutOfIDSpaceException(String msg, Object... args) {
+    public IDNotFoundException(String msg, Object... args) {
         super(msg, args);
     }
 }

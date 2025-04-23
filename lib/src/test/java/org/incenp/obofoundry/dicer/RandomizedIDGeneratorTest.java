@@ -51,7 +51,7 @@ public class RandomizedIDGeneratorTest {
                 String id = gen.nextID();
                 Assertions.assertTrue(id.startsWith("https://example.org/0001"));
             }
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -91,7 +91,7 @@ public class RandomizedIDGeneratorTest {
                 Assertions.assertTrue(id.startsWith("https://example.org/0001"));
                 Assertions.assertFalse(id.startsWith("https://example/org/00010"));
             }
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -112,7 +112,7 @@ public class RandomizedIDGeneratorTest {
                 gen.nextID();
             }
             Assertions.fail("Expected OutOfIDSpaceException not thrown", null);
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.assertEquals("No available ID in range", e.getMessage());
         }
     }

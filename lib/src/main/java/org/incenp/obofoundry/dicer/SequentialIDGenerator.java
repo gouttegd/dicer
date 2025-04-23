@@ -89,13 +89,13 @@ public class SequentialIDGenerator implements IAutoIDGenerator {
     }
 
     @Override
-    public String nextID() throws OutOfIDSpaceException {
+    public String nextID() throws IDNotFoundException {
         while ( lowerBound < upperBound ) {
             String id = String.format(format, lowerBound++);
             if ( !signature.containsEntityInSignature(IRI.create(id)) ) {
                 return id;
             }
         }
-        throw new OutOfIDSpaceException("No available ID in range");
+        throw new IDNotFoundException("No available ID in range");
     }
 }

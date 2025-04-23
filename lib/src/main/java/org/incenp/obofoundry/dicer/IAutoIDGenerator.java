@@ -27,8 +27,8 @@ public interface IAutoIDGenerator {
      * Generates a new automatic ID.
      * 
      * @return The newly generated ID.
-     * @throws OutOfIDSpaceException If the generator cannot generate an ID for any
-     *                               reason.
+     * @throws IDNotFoundException If the generator cannot generate an ID for any
+     *                             reason.
      */
-    public String nextID() throws OutOfIDSpaceException;
+    public String nextID() throws IDNotFoundException;
 }

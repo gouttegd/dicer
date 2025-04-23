@@ -52,7 +52,7 @@ public class SequentialIDGeneratorTest {
                 String id = gen.nextID();
                 Assertions.assertEquals(String.format("https://example.org/%07d", 1000 + i), id);
             }
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -91,7 +91,7 @@ public class SequentialIDGeneratorTest {
                 String id = gen.nextID();
                 Assertions.assertEquals(String.format("https://example.org/%07d", 1100 + i), id);
             }
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -110,7 +110,7 @@ public class SequentialIDGeneratorTest {
                 int expected = i < 5 ? i : i + 1;
                 Assertions.assertEquals(String.format("https://example.org/%07d", 1000 + expected), id);
             }
-        } catch ( OutOfIDSpaceException e ) {
+        } catch ( IDNotFoundException e ) {
             Assertions.fail(e);
         }
     }
@@ -127,7 +127,7 @@ public class SequentialIDGeneratorTest {
                 } else {
                     Assertions.fail("Expected OutOfIDSpaceException not thrown");
                 }
-            } catch ( OutOfIDSpaceException e ) {
+            } catch ( IDNotFoundException e ) {
                 if ( i < 5 ) {
                     Assertions.fail(e);
                 } else {

@@ -97,7 +97,7 @@ public class RandomizedIDGenerator implements IAutoIDGenerator {
     }
 
     @Override
-    public String nextID() throws OutOfIDSpaceException {
+    public String nextID() throws IDNotFoundException {
         // Find the lowest unused ID within the range, so that we can start testing
         // random IDs from there.
         while ( !lowerBoundFound && lowerBound < upperBound ) {
@@ -119,7 +119,7 @@ public class RandomizedIDGenerator implements IAutoIDGenerator {
         } while ( i < upperBound && !found );
 
         if ( i >= upperBound ) {
-            throw new OutOfIDSpaceException("No available ID in range");
+            throw new IDNotFoundException("No available ID in range");
         }
 
         return id;
