@@ -18,33 +18,16 @@
 
 package org.incenp.obofoundry.dicer;
 
+import java.util.HashSet;
+
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 public class RandomizedIDGeneratorTest {
 
-    private OWLOntology ontology;
-
-    @BeforeEach
-    private void prepareOntology() {
-        OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
-        try {
-            ontology = mgr.createOntology();
-        } catch ( OWLOntologyCreationException e ) {
-            Assertions.fail(e);
-        }
-    }
-
     @Test
     void testGenerateIDWithinRange() {
-        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 2000);
+        IAutoIDGenerator gen = new RandomizedIDGenerator("https://example.org/%07d", 1000, 2000, (id) -> false);
 
         try {
             for ( int i = 0; i < 10; i++ ) {
@@ -57,33 +40,14 @@ public class RandomizedIDGeneratorTest {
     }
 
     @Test
-    void testUsingIDPolicy() {
-        IDPolicy policy = new IDPolicy("myont");
-        try {
-            policy.addRange("user1", null, 1000);
-        } catch ( IDRangeNotFoundException e ) {
-            Assertions.fail(e);
-        }
-
-        try {
-            IAutoIDGenerator gen = new SequentialIDGenerator(ontology, policy, "user1");
-            String id = gen.nextID();
-            Assertions.assertTrue(id.startsWith("http://purl.obolibrary.org/obo/MYONT_0000"));
-        } catch ( IDException e ) {
-            Assertions.fail(e);
-        }
-    }
-
-    @Test
     void testAvoidUsedLowerIDs() {
-        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        HashSet<String> usedIDs = new HashSet<>();
         for ( int i = 1000; i < 1100; i++ ) {
-            String id = String.format("https://example.org/%07d", i);
-            ontology.getOWLOntologyManager().addAxiom(ontology,
-                    factory.getOWLDeclarationAxiom(factory.getOWLClass(IRI.create(id))));
+            usedIDs.add(String.format("https://example.org/%07d", i));
         }
 
-        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 2000);
+        IAutoIDGenerator gen = new RandomizedIDGenerator("https://example.org/%07d", 1000, 2000,
+                (id) -> usedIDs.contains(id));
 
         try {
             for ( int i = 0; i < 10; i++ ) {
@@ -98,20 +62,19 @@ public class RandomizedIDGeneratorTest {
 
     @Test
     void testFailUponOutOfIDSpace() {
-        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        HashSet<String> usedIDs = new HashSet<String>();
         for ( int i = 1000; i < 1100; i++ ) {
-            String id = String.format("https://example.org/%07d", i);
-            ontology.getOWLOntologyManager().addAxiom(ontology,
-                    factory.getOWLDeclarationAxiom(factory.getOWLClass(IRI.create(id))));
+            usedIDs.add(String.format("https://example.org/%07d", i));
         }
 
-        IAutoIDGenerator gen = new RandomizedIDGenerator(ontology, "https://example.org/%07d", 1000, 1200);
+        IAutoIDGenerator gen = new RandomizedIDGenerator("https://example.org/%07d", 1000, 1200,
+                (id) -> usedIDs.contains(id));
 
         try {
             for ( int i = 0; i < 100; i++ ) {
                 gen.nextID();
             }
-            Assertions.fail("Expected OutOfIDSpaceException not thrown", null);
+            Assertions.fail("Expected IDNotFoundException not thrown", null);
         } catch ( IDNotFoundException e ) {
             Assertions.assertEquals("No available ID in range", e.getMessage());
         }

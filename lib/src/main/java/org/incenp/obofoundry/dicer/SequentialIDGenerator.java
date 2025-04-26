@@ -18,81 +18,43 @@
 
 package org.incenp.obofoundry.dicer;
 
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLSignature;
-
 /**
  * Generates numerical IDs sequentially within a given range.
  */
 public class SequentialIDGenerator implements IAutoIDGenerator {
 
-    private OWLSignature signature;
     private String format;
     private int lowerBound;
     private int upperBound;
+    private IExistenceChecker checker;
 
     /**
      * Creates a new instance.
      * 
-     * @param signature The OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param format    The format of newly generated IDs. It must contain a C-style
-     *                  format specifier indicating where the numerical portion of
-     *                  the ID should appear and in which format.
-     * @param min       The lower bound (inclusive) for newly generated IDs.
-     * @param max       The upper bound (exclusive) for newly generated IDs.
+     * @param format  The format of newly generated IDs. It must contain a C-style
+     *                format specified where and how the numerical portion of the ID
+     *                should appear.
+     * @param min     The lower bound (inclusive) for newly generated IDs.
+     * @param max     The upper bound (exclusive) for newly generated IDs.
+     * @param checker An object to check whether a given ID already exists; the
+     *                generator will call it to avoid generating IDs that are
+     *                already in use.
      */
-    public SequentialIDGenerator(OWLSignature signature, String format, int min, int max) {
+    public SequentialIDGenerator(String format, int min, int max, IExistenceChecker checker) {
         if ( min < 0 || max <= min ) {
             throw new IllegalArgumentException("Invalid range");
         }
-        this.signature = signature;
         this.format = format;
+        this.checker = checker;
         lowerBound = min;
         upperBound = max;
-    }
-
-    /**
-     * Creates a new instance from the specified range object.
-     * 
-     * @param signature The OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param format    The format of newly generated IDs. It must contain a C-style
-     *                  format specifier indicating where the numerical portion of
-     *                  the ID should appear and in which format.
-     * @param range     The range in which newly generated IDs should be picked.
-     */
-    public SequentialIDGenerator(OWLSignature signature, String format, IDRange range) {
-        this.signature = signature;
-        this.format = format;
-        lowerBound = range.getLowerBound();
-        upperBound = range.getUpperBound();
-    }
-
-    /**
-     * Creates a new instance from the specified ID range policy.
-     * 
-     * @param signature The OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param policy    The ID policy to use.
-     * @param rangeName The name of the range within the given policy to use.
-     * @throws IDRangeNotFoundException If the policy does not contain any range
-     *                                  associated with the specified name.
-     */
-    public SequentialIDGenerator(OWLOntology signature, IDPolicy policy, String rangeName)
-            throws IDRangeNotFoundException {
-        this(signature, policy.getFormat(), policy.getRange(rangeName));
     }
 
     @Override
     public String nextID() throws IDNotFoundException {
         while ( lowerBound < upperBound ) {
             String id = String.format(format, lowerBound++);
-            if ( !signature.containsEntityInSignature(IRI.create(id)) ) {
+            if ( !checker.exists(id) ) {
                 return id;
             }
         }

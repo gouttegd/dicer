@@ -21,9 +21,6 @@ package org.incenp.obofoundry.dicer;
 import java.util.HashSet;
 import java.util.Random;
 
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLSignature;
-
 /**
  * Generates numerical IDs within a given range. This class is similar to
  * {@link SequentialIDGenerator} except that numerical IDs are chosen randomly
@@ -31,69 +28,34 @@ import org.semanticweb.owlapi.model.OWLSignature;
  */
 public class RandomizedIDGenerator implements IAutoIDGenerator {
 
-    private OWLSignature signature;
     private String format;
     private int lowerBound;
     private int upperBound;
     private boolean lowerBoundFound = false;
     private Random rand = new Random();
-    private HashSet<String> testedIDs = new HashSet<String>();
+    private IExistenceChecker checker;
+    private HashSet<String> generatedIDs = new HashSet<>();
 
     /**
      * Creates a new instance.
      * 
-     * @param signature THE OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param format    The format of newly generated IDs. It must contain a C-style
-     *                  format specifier indicating where the numerical portion of
-     *                  the ID should appear and in which format.
-     * @param min       The lower bound (inclusive) for newly generated IDs.
-     * @param max       The upper bound (exclusive) for newly generated IDs.
+     * @param format  The format of newly generated IDs. It must contain a C-style
+     *                format specifier indicating where and how the numerical
+     *                portion of the ID should appear.
+     * @param min     The lower bound (inclusive) for newly generated IDs.
+     * @param max     The upper bound (exclusive) for newly generated IDs.
+     * @param checker An object to check whether a given ID already exists; the
+     *                generator will call it to avoid generating IDs that are
+     *                already in use.
      */
-    public RandomizedIDGenerator(OWLSignature signature, String format, int min, int max) {
+    public RandomizedIDGenerator(String format, int min, int max, IExistenceChecker checker) {
         if ( min < 0 || max <= min ) {
             throw new IllegalArgumentException("Invalid range");
         }
-
-        this.signature = signature;
         this.format = format;
+        this.checker = checker;
         lowerBound = min;
         upperBound = max;
-    }
-
-    /**
-     * Creates a new instance from the specified range object.
-     * 
-     * @param signature The OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param format    The format of newly generated IDs. It must contain a C-style
-     *                  format specifier indicating where the numerical portion of
-     *                  the ID should appear and in which format.
-     * @param range     The range in which newly generated IDs should be picked.
-     */
-    public RandomizedIDGenerator(OWLSignature signature, String format, IDRange range) {
-        this.signature = signature;
-        this.format = format;
-        lowerBound = range.getLowerBound();
-        upperBound = range.getUpperBound();
-    }
-
-    /**
-     * Creates a new instance from the specified ID range policy.
-     * 
-     * @param signature The OWLSignature to generate IDs for. The signature will be
-     *                  checked to ensure the generated IDs do not clash with the
-     *                  IDs of existing entities.
-     * @param policy    The ID policy to use.
-     * @param rangeName The name of the range within the given policy to use.
-     * @throws IDRangeNotFoundException If the policy does not contain any range
-     *                                  associated with the specified name.
-     */
-    public RandomizedIDGenerator(OWLSignature signature, IDPolicy policy, String rangeName)
-            throws IDRangeNotFoundException {
-        this(signature, policy.getFormat(), policy.getRange(rangeName));
     }
 
     @Override
@@ -102,7 +64,7 @@ public class RandomizedIDGenerator implements IAutoIDGenerator {
         // random IDs from there.
         while ( !lowerBoundFound && lowerBound < upperBound ) {
             String test = String.format(format, lowerBound);
-            if ( !exists(test, false) ) {
+            if ( !checker.exists(test) ) {
                 lowerBoundFound = true;
             } else {
                 lowerBound += 1;
@@ -115,32 +77,14 @@ public class RandomizedIDGenerator implements IAutoIDGenerator {
         do {
             i += rand.nextInt(100);
             id = String.format(format, i);
-            found = !exists(id, true);
+            found = !checker.exists(id) && !generatedIDs.contains(id);
         } while ( i < upperBound && !found );
 
         if ( i >= upperBound ) {
             throw new IDNotFoundException("No available ID in range");
         }
 
+        generatedIDs.add(id);
         return id;
-    }
-
-    /*
-     * Tests whether an ID is already in use, and cache the result so that we do not
-     * have to query the signature repeatedly for the same ID.
-     * 
-     * If 'add' is true and the ID is not already in use, add it to the cache so
-     * that it can be marked as now being in use.
-     */
-    private boolean exists(String id, boolean add) {
-        if ( testedIDs.contains(id) ) {
-            return true;
-        } else if ( signature.containsEntityInSignature(IRI.create(id)) ) {
-            testedIDs.add(id);
-            return true;
-        } else if ( add ) {
-            testedIDs.add(id);
-        }
-        return false;
     }
 }
