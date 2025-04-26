@@ -28,31 +28,7 @@ public class IDRange {
     private String comment;
     private int lowerBound;
     private int upperBound;
-
-    /**
-     * Creates a range that starts at a given lower bound. The range is 10,000 IDs
-     * wide.
-     * 
-     * @param id    The range’s own ID.
-     * @param name  The name of the user this range is allocated to.
-     * @param start The lower bound (inclusive) of the range.
-     */
-    public IDRange(int id, String name, int start) {
-        this(id, name, null, start, 10000);
-    }
-
-    /**
-     * Creates a range that starts at a given lower bound, for a given number of
-     * IDs.
-     * 
-     * @param id    The range’s own ID.
-     * @param name  The name of the user this range is allocated to.
-     * @param start The lower bound (inclusive) of the range.
-     * @param size  The number of IDs in the range.
-     */
-    public IDRange(int id, String name, int start, int size) {
-        this(id, name, null, start, size);
-    }
+    private IDPolicy policy;
 
     /**
      * Creates a range with an optional comment.
@@ -62,23 +38,13 @@ public class IDRange {
      * @param comment A comment associated with the range. May be {@code null}.
      * @param start   The lower bound (inclusive) of the range.
      * @param size    The number of IDs in the range.
+     * @param policy  The policy this range belongs to.
      */
-    public IDRange(int id, String name, String comment, int start, int size) {
-        if ( id < 0 ) {
-            throw new IllegalArgumentException("Negative range ID");
-        }
-        if ( name == null ) {
-            throw new IllegalArgumentException("Missing range name");
-        }
-        if ( start < 0 ) {
-            throw new IllegalArgumentException("Negative lower bound value");
-        }
-        if ( size <= 0 ) {
-            throw new IllegalArgumentException("Negative or null range size");
-        }
+    protected IDRange(int id, String name, String comment, int start, int size, IDPolicy policy) {
         this.id = id;
         this.name = name;
         this.comment = comment;
+        this.policy = policy;
         lowerBound = start;
         upperBound = start + size;
     }
@@ -136,6 +102,15 @@ public class IDRange {
      */
     public int getSize() {
         return upperBound - lowerBound;
+    }
+
+    /**
+     * Gets the policy this range belongs to.
+     * 
+     * @return The ID policy this range belongs to.
+     */
+    public IDPolicy getPolicy() {
+        return policy;
     }
 
     @Override

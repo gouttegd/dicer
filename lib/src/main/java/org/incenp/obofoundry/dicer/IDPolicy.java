@@ -36,7 +36,8 @@ public class IDPolicy {
     private int width;
     private int lastId;
     private int maxBound;
-    private Map<String, IDRange> ranges;
+    private Map<String, IDRange> rangesByName;
+    private Map<Integer, IDRange> rangesByID;
 
     /**
      * Creates a new policy for a typical OBO ontology.
@@ -78,7 +79,8 @@ public class IDPolicy {
         this.prefix = prefix;
         this.prefixName = prefixName;
         this.width = width;
-        ranges = new HashMap<String, IDRange>();
+        rangesByName = new HashMap<>();
+        rangesByID = new HashMap<>();
         lastId = 0;
 
         maxBound = 1;
@@ -159,7 +161,7 @@ public class IDPolicy {
      * @return A list of all the ranges in this policy.
      */
     public List<IDRange> getRangesByID() {
-        ArrayList<IDRange> list = new ArrayList<IDRange>(ranges.values());
+        ArrayList<IDRange> list = new ArrayList<IDRange>(rangesByID.values());
         list.sort((a, b) -> Integer.compare(a.getID(), b.getID()));
         return list;
     }
@@ -171,7 +173,7 @@ public class IDPolicy {
      * @return A list of all the ranges in this policy.
      */
     public List<IDRange> getRangesByLowerBound() {
-        ArrayList<IDRange> list = new ArrayList<IDRange>(ranges.values());
+        ArrayList<IDRange> list = new ArrayList<IDRange>(rangesByID.values());
         list.sort((a, b) -> Integer.compare(a.getLowerBound(), b.getLowerBound()));
         return list;
     }
@@ -187,12 +189,12 @@ public class IDPolicy {
         int start = 0;
         for ( IDRange range : getRangesByLowerBound() ) {
             if ( range.getLowerBound() > start ) {
-                unallocated.add(new IDRange(0, "Unallocated", null, start, range.getLowerBound() - start));
+                unallocated.add(new IDRange(0, "Unallocated", null, start, range.getLowerBound() - start, this));
             }
             start = range.getUpperBound();
         }
         if ( start < maxBound ) {
-            unallocated.add(new IDRange(0, "Unallocated", null, start, maxBound - start));
+            unallocated.add(new IDRange(0, "Unallocated", null, start, maxBound - start, this));
         }
 
         return unallocated;
@@ -209,18 +211,23 @@ public class IDPolicy {
      */
     @Deprecated
     public IDRange getRangeFor(String name) {
-        return ranges.get(name);
+        return rangesByName.get(name);
     }
 
     /**
      * Finds the range allocated to a given user.
+     * <p>
+     * Note that this method, as all similar methods ({@link #findAnyRange(List)},
+     * {@link #getRange(String)}, and {@link #getAnyRange(List)}) will return the
+     * <em>last registered range</em> for the requested name, in the event that
+     * several ranges were registered for the same name.
      * 
      * @param name The name of the user for which to retrieve the range.
      * @return Optional of the requested range, or Optional.empty if the policy does
      *         not contain any range with that name.
      */
     public Optional<IDRange> findRange(String name) {
-        return Optional.ofNullable(ranges.get(name));
+        return Optional.ofNullable(rangesByName.get(name));
     }
 
     /**
@@ -232,7 +239,7 @@ public class IDPolicy {
      */
     public Optional<IDRange> findAnyRange(List<String> names) {
         for ( String name : names ) {
-            IDRange rng = ranges.get(name);
+            IDRange rng = rangesByName.get(name);
             if ( rng != null ) {
                 return Optional.of(rng);
             }
@@ -252,7 +259,7 @@ public class IDPolicy {
      *                                  name.
      */
     public IDRange getRange(String name) throws IDRangeNotFoundException {
-        IDRange rng = ranges.get(name);
+        IDRange rng = rangesByName.get(name);
         if ( rng == null ) {
             throw new IDRangeNotFoundException(name);
         }
@@ -273,7 +280,7 @@ public class IDPolicy {
      */
     public IDRange getAnyRange(List<String> names) throws IDRangeNotFoundException {
         for ( String name : names ) {
-            IDRange rng = ranges.get(name);
+            IDRange rng = rangesByName.get(name);
             if ( rng != null ) {
                 return rng;
             }
@@ -292,23 +299,28 @@ public class IDPolicy {
      * @param comment A comment associated with the range. May be {@code null}.
      * @param lower   The lower bound (inclusive) of the range.
      * @param upper   The upper bound (exclusive) of the range.
-     * @throws InvalidIDPolicyException If the range is invalid, or if it overlaps
-     *                                  with another range in the policy.
+     * @throws InvalidIDPolicyException If the range is invalid, if it overlaps with
+     *                                  another range in the policy, or the policy
+     *                                  already contains a range with the same ID.
      */
     protected void addRange(int id, String name, String comment, int lower, int upper)
             throws InvalidIDPolicyException {
         if ( lower < 0 || lower >= upper || upper > maxBound ) {
             throw new InvalidIDPolicyException("Invalid ID range: [%d..%d)", lower, upper);
         }
-        for ( IDRange r : ranges.values() ) {
+        if ( rangesByID.containsKey(id) ) {
+            throw new InvalidIDPolicyException("Range ID already in use: %d", id);
+        }
+        for ( IDRange r : rangesByID.values() ) {
             if ( !(upper <= r.getLowerBound() || lower >= r.getUpperBound()) ) {
                 throw new InvalidIDPolicyException(
                         "Range [%d..%d) for \"%s\" overlaps with range [%d..%d) for \"%s\"", lower, upper, name,
                         r.getLowerBound(), r.getUpperBound(), r.getName());
             }
         }
-        IDRange rng = new IDRange(id, name, comment, lower, upper - lower);
-        ranges.put(name, rng);
+        IDRange rng = new IDRange(id, name, comment, lower, upper - lower, this);
+        rangesByID.put(id, rng);
+        rangesByName.put(name, rng);
 
         if ( id > lastId ) {
             lastId = id;
@@ -323,6 +335,9 @@ public class IDPolicy {
      *         desired size, or -1 if no available range was found.
      */
     public int findOpenRange(int width) {
+        if ( width < 0 ) {
+            throw new IllegalArgumentException("Invalid negative range width");
+        }
         int start = 0;
         boolean found = false;
         for ( IDRange rng : getRangesByLowerBound() ) {
@@ -356,8 +371,9 @@ public class IDPolicy {
         if ( start == -1 ) {
             throw new IDRangeNotFoundException("Not enough space for a %d-wide range", size);
         }
-        IDRange rng = new IDRange(++lastId, name, comment, start, size);
-        ranges.put(name, rng);
+        IDRange rng = new IDRange(++lastId, name, comment, start, size, this);
+        rangesByID.put(rng.getID(), rng);
+        rangesByName.put(name, rng);
 
         return rng;
     }
