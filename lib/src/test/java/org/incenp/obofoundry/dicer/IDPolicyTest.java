@@ -53,6 +53,17 @@ public class IDPolicyTest {
     }
 
     @Test
+    void testPolicyFormatFromRange() {
+        IDPolicy policy = new IDPolicy("myont");
+        try {
+            IDRange rng = policy.addRange("user1", null, 10000);
+            Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_%07d", rng.getFormat());
+        } catch ( IDRangeNotFoundException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testCreatingFirstRange() {
         IDPolicy policy = new IDPolicy("myont");
         try {

@@ -40,6 +40,29 @@ public class RandomizedIDGeneratorTest {
     }
 
     @Test
+    void testInitWithIDRange() {
+        IDPolicy policy = new IDPolicy("myont");
+        IDRange rng = null;
+        try {
+            policy.addRange("user1", null, 1000);
+            rng = policy.addRange("user2", null, 1000);
+        } catch ( IDRangeNotFoundException e ) {
+            Assertions.fail(e);
+        }
+
+        IAutoIDGenerator gen = new RandomizedIDGenerator(rng, (id) -> false);
+
+        try {
+            for ( int i = 0; i < 10; i++ ) {
+                String id = gen.nextID();
+                Assertions.assertTrue(id.startsWith("http://purl.obolibrary.org/obo/MYONT_0001"));
+            }
+        } catch ( IDNotFoundException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testAvoidUsedLowerIDs() {
         HashSet<String> usedIDs = new HashSet<>();
         for ( int i = 1000; i < 1100; i++ ) {

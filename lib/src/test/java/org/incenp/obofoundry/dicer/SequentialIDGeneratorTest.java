@@ -40,6 +40,28 @@ public class SequentialIDGeneratorTest {
     }
 
     @Test
+    void testInitWithIDRange() {
+        IDPolicy policy = new IDPolicy("myont");
+        IDRange rng = null;
+        try {
+            rng = policy.addRange("user1", null, 1000);
+        } catch ( IDRangeNotFoundException e ) {
+            Assertions.fail(e);
+        }
+
+        IAutoIDGenerator gen = new SequentialIDGenerator(rng, (id) -> false);
+
+        try {
+            for ( int i = 0; i < 10; i++ ) {
+                String id = gen.nextID();
+                Assertions.assertEquals(String.format("http://purl.obolibrary.org/obo/MYONT_%07d", i), id);
+            }
+        } catch ( IDNotFoundException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testAvoidUsedLowerIDs() {
         HashSet<String> usedIDs = new HashSet<>();
         for ( int i = 1000; i < 1100; i++ ) {

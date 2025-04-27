@@ -50,6 +50,18 @@ public class SequentialIDGenerator implements IAutoIDGenerator {
         upperBound = max;
     }
 
+    /**
+     * Creates a new instance from a IDRange object.
+     * 
+     * @param range   The ID policy range for which to generate IDs.
+     * @param checker An object to check whether a given ID already exists; the
+     *                generator will call it to avoid generating IDs that are
+     *                already in use.
+     */
+    public SequentialIDGenerator(IDRange range, IExistenceChecker checker) {
+        this(range.getFormat(), range.getLowerBound(), range.getUpperBound(), checker);
+    }
+
     @Override
     public String nextID() throws IDNotFoundException {
         while ( lowerBound < upperBound ) {

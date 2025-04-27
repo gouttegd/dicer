@@ -105,12 +105,16 @@ public class IDRange {
     }
 
     /**
-     * Gets the policy this range belongs to.
+     * Gets a format string suitable to mind IDs conforming to the policy this range
+     * belongs to.
+     * <p>
+     * This is a convenience method so that client code can mint IDs with just a
+     * IDRange object, without needing a reference to the policy.
      * 
-     * @return The ID policy this range belongs to.
+     * @return The policy’s format string.
      */
-    public IDPolicy getPolicy() {
-        return policy;
+    public String getFormat() {
+        return policy.getFormat();
     }
 
     @Override
