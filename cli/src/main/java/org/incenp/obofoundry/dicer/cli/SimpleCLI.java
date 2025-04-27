@@ -57,6 +57,7 @@ public class SimpleCLI implements IVersionProvider, IExecutionExceptionHandler
                 .setUsageHelpLongOptionsMaxWidth(23)
                 .setUsageHelpAutoWidth(true)
                 .addSubcommand(new PolicyTool())
+                .addSubcommand(new TSVTool())
                 .addSubcommand(new HelpCommand())
                 .execute(args);
         return rc;
