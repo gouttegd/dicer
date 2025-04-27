@@ -53,11 +53,13 @@ public class IDPolicyTest {
     }
 
     @Test
-    void testPolicyFormatFromRange() {
+    void testPolicyRange() {
         IDPolicy policy = new IDPolicy("myont");
         try {
             IDRange rng = policy.addRange("user1", null, 10000);
             Assertions.assertEquals("http://purl.obolibrary.org/obo/MYONT_%07d", rng.getFormat());
+            Assertions.assertEquals(10000, rng.getSize());
+            Assertions.assertEquals("id=1, name=user1, bounds=[0..10000)", rng.toString());
         } catch ( IDRangeNotFoundException e ) {
             Assertions.fail(e);
         }
@@ -247,6 +249,26 @@ public class IDPolicyTest {
             Assertions.assertEquals("Range [5000..15000) for \"user2\" overlaps with range [0..10000) for \"user1\"",
                     e.getMessage());
         }
+    }
+
+    @Test
+    void testUnallocatedRanges() {
+        IDPolicy policy = new IDPolicy("myont");
+        try {
+            policy.addRange(1, "user1", null, 10000, 20000);
+            policy.addRange(2, "user2", null, 50000, 100000);
+        } catch ( InvalidIDPolicyException e ) {
+            Assertions.fail(e);
+        }
+
+        List<IDRange> unallocated = policy.getUnallocatedRanges();
+        Assertions.assertEquals(3, unallocated.size());
+        Assertions.assertEquals(0, unallocated.get(0).getLowerBound());
+        Assertions.assertEquals(10000, unallocated.get(0).getUpperBound());
+        Assertions.assertEquals(20000, unallocated.get(1).getLowerBound());
+        Assertions.assertEquals(50000, unallocated.get(1).getUpperBound());
+        Assertions.assertEquals(100000, unallocated.get(2).getLowerBound());
+        Assertions.assertEquals(policy.getMaxUpperBound(), unallocated.get(2).getUpperBound());
     }
 
     private IDPolicy getTestPolicy() {

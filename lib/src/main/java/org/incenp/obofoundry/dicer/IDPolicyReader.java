@@ -33,6 +33,7 @@ import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
 import org.semanticweb.owlapi.model.OWLFacetRestriction;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLRuntimeException;
 import org.semanticweb.owlapi.util.OWLDataVisitorExAdapter;
 import org.semanticweb.owlapi.vocab.OWLFacet;
 
@@ -58,7 +59,7 @@ public class IDPolicyReader {
             ont = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(new File(filename));
         } catch ( OWLOntologyCreationIOException e ) {
             throw new IOException("Cannot load ID range policy", e);
-        } catch ( OWLOntologyCreationException e ) {
+        } catch ( OWLOntologyCreationException | OWLRuntimeException e ) {
             throw new InvalidIDPolicyException("Cannot load ID range policy", e);
         }
 

@@ -78,4 +78,22 @@ public class IDPolicyReaderTest {
         Assertions.assertEquals(10000, rng.getLowerBound());
         Assertions.assertEquals(30000, rng.getUpperBound());
     }
+
+    @Test
+    void testReadInvalidPolicy() {
+        IDPolicyReader p = new IDPolicyReader();
+
+        String[] invalidFiles = {
+                "invalid-ontology-idranges.owl",
+                "invalid-non-literal-annotation-idranges.owl",
+                "invalid-non-digit-width-idranges.owl",
+                "invalid-no-prefix-name-idranges.owl",
+                "invalid-policy-name-idranges.owl",
+                "invalid-range-id-idranges.owl"
+        };
+
+        for ( String file : invalidFiles ) {
+            Assertions.assertThrows(InvalidIDPolicyException.class, () -> p.read("src/test/resources/input/" + file));
+        }
+    }
 }
