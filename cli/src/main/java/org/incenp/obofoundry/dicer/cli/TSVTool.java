@@ -18,9 +18,12 @@
 
 package org.incenp.obofoundry.dicer.cli;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.dicer.IAutoIDGenerator;
@@ -132,10 +135,13 @@ public class TSVTool implements Runnable, ITSVListener {
         private boolean overwrite;
     }
 
-    private PrintStream output;
+    private Writer output;
     private String outputSep;
     private IAutoIDGenerator generator;
     private int columnIndex;
+    private List<String> comments = new ArrayList<>();
+    private List<String> header;
+    private List<List<String>> rows = new ArrayList<>();
 
     enum SeparatorMode {
         TAB('\t'),
@@ -153,46 +159,80 @@ public class TSVTool implements Runnable, ITSVListener {
 
     @Override
     public void run() {
+        readInput();
+        generateIDs();
+        writeOutput();
+    }
 
-        if ( outputOpts.file.equals("-") ) {
-            output = System.out;
-        } else {
-            try {
-                output = new PrintStream(outputOpts.file);
-            } catch ( FileNotFoundException e ) {
-                cli.error("Cannot write to %s: %s", outputOpts.file, e.getMessage());
-            }
-        }
+    /*
+     * Top-level methods.
+     */
 
-        generator = getIDGenerator();
-
+    private void readInput() {
         try {
             TSVReader reader = new TSVReader(inputOpts.file);
             reader.addListener(this);
             reader.setSeparator(inputOpts.separatorMode.separator);
             reader.read();
-            output.close();
         } catch ( IOException e ) {
             cli.error("Cannot read %s: %s", inputOpts.file, e.getMessage());
         }
     }
 
+    private void generateIDs() {
+        generator = getIDGenerator();
+        try {
+            for ( List<String> row : rows ) {
+                if ( editOpts.overwrite || row.get(columnIndex).isEmpty() ) {
+                    row.set(columnIndex, generator.nextID());
+                }
+            }
+        } catch ( IDNotFoundException e ) {
+            cli.error("Cannot generate ID: %s", e.getMessage());
+        }
+    }
+
+    private void writeOutput() {
+        try {
+            if ( outputOpts.file.equals("-") ) {
+                output = new OutputStreamWriter(System.out);
+            } else {
+                output = new FileWriter(new File(outputOpts.file));
+            }
+
+            for ( String comment : comments ) {
+                output.append('#');
+                output.append(comment);
+                output.append('\n');
+            }
+            writeRow(header);
+            for ( List<String> row : rows ) {
+                writeRow(row);
+            }
+            output.close();
+        } catch ( IOException e ) {
+            cli.error("Cannot write to %s: %s", outputOpts.file, e.getMessage());
+        }
+    }
+
+    /*
+     * Helper methods.
+     */
+
     @Override
     public void onComment(String comment) {
-        output.append('#');
-        output.append(comment);
-        output.append('\n');
+        comments.add(comment);
     }
 
     @Override
     public void onHeader(List<String> header, char separator) {
+        this.header = header;
+
         if ( outputOpts.separatorMode == SeparatorMode.AUTO ) {
             outputSep = Character.toString(separator);
         } else {
             outputSep = Character.toString((char) outputOpts.separatorMode.separator);
         }
-        output.append(String.join(outputSep, header));
-        output.append('\n');
 
         if ( editOpts.columnName == null ) {
             columnIndex = 0;
@@ -216,13 +256,10 @@ public class TSVTool implements Runnable, ITSVListener {
 
     @Override
     public void onRow(List<String> row) {
-        if ( editOpts.overwrite || row.get(columnIndex).isEmpty() ) {
-            try {
-                row.set(columnIndex, generator.nextID());
-            } catch ( IDNotFoundException e ) {
-                cli.error("Cannot generate ID: %s", e.getMessage());
-            }
-        }
+        rows.add(row);
+    }
+
+    private void writeRow(List<String> row) throws IOException {
         output.append(String.join(outputSep, row));
         output.append('\n');
     }
@@ -249,5 +286,4 @@ public class TSVTool implements Runnable, ITSVListener {
 
         return idGenOpts.shortFormat ? new ShortenedIDGenerator(gen) : gen;
     }
-
 }
