@@ -1,0 +1,5 @@
+# A simple test file
+id	label	description
+http://purl.obolibrary.org/obo/MYONT_0010000	alice	Alice
+http://purl.obolibrary.org/obo/MYONT_0010001	bob	Bob
+http://purl.obolibrary.org/obo/MYONT_0010002	charlie	Charlie

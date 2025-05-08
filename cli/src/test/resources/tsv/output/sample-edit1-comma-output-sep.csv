@@ -1,0 +1,5 @@
+# A simple test file
+id,label,description
+https://example.org/DICER_0001000,alice,Alice
+https://example.org/DICER_0001001,bob,Bob
+https://example.org/DICER_0001002,charlie,Charlie

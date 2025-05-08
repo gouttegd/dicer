@@ -1,0 +1,42 @@
+Prefix: idrange: <http://purl.obolibrary.org/obo/myont/idrange/>
+Prefix: allocatedto: <http://purl.obolibrary.org/obo/IAO_0000597>
+Prefix: iddigits: <http://purl.obolibrary.org/obo/IAO_0000596>
+Prefix: idprefix: <http://purl.obolibrary.org/obo/IAO_0000599>
+Prefix: idsfor: <http://purl.obolibrary.org/obo/IAO_0000598>
+Prefix: comment: <http://www.w3.org/2000/01/rdf-schema#comment>
+
+Ontology: <http://purl.obolibrary.org/obo/myont/myont-idranges.owl>
+
+Annotations:
+    idprefix: "http://purl.obolibrary.org/obo/MYONT_",
+    iddigits: 7,
+    idsfor: "MYONT"
+
+AnnotationProperty: allocatedto:
+
+AnnotationProperty: idprefix:
+
+AnnotationProperty: iddigits:
+
+AnnotationProperty: idsfor:
+
+AnnotationProperty: comment:
+
+Datatype: idrange:1
+    Annotations:
+        allocatedto: "user1"
+    EquivalentTo:
+        xsd:integer[>= 0, < 10000]
+
+Datatype: idrange:2
+    Annotations:
+        allocatedto: "user2",
+        comment: "Range for user 2"
+    EquivalentTo:
+        xsd:integer[>= 10000, < 30000]
+
+Datatype: idrange:3
+    Annotations:
+        allocatedto: "user3"
+    EquivalentTo:
+        xsd:integer[>= 30000, < 60000]

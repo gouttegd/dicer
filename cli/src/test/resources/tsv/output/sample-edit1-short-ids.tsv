@@ -1,0 +1,5 @@
+# A simple test file
+id	label	description
+DICER:0001000	alice	Alice
+DICER:0001001	bob	Bob
+DICER:0001002	charlie	Charlie
