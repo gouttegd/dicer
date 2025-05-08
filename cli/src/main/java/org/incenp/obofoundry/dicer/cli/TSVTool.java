@@ -26,13 +26,21 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.catalog.CatalogException;
+
 import org.incenp.obofoundry.dicer.IAutoIDGenerator;
 import org.incenp.obofoundry.dicer.IDNotFoundException;
 import org.incenp.obofoundry.dicer.IDPolicyHelper;
 import org.incenp.obofoundry.dicer.IDRange;
 import org.incenp.obofoundry.dicer.IDRangeNotFoundException;
+import org.incenp.obofoundry.dicer.IExistenceChecker;
 import org.incenp.obofoundry.dicer.InvalidIDPolicyException;
 import org.incenp.obofoundry.dicer.SequentialIDGenerator;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -133,6 +141,19 @@ public class TSVTool implements Runnable, ITSVListener {
                 defaultValue = "true", fallbackValue = "true",
                 description = "Overwrite existing values. This is enabled by default.")
         private boolean overwrite;
+    }
+
+    @ArgGroup(validate = false, heading = "%nID constraints:%n")
+    private IDSourceOptions idSourceOpts = new IDSourceOptions();
+
+    private static class IDSourceOptions {
+        @Option(names = { "--ontology" }, paramLabel = "FILE",
+                description = "Use the specified ontology as source of already-used IDs.")
+        private String ontologyFile;
+
+        @Option(names = { "--catalog" }, paramLabel = "FILE",
+                description = "Use the specified XML catalog.")
+        private String catalogFile;
     }
 
     private Writer output;
@@ -266,6 +287,7 @@ public class TSVTool implements Runnable, ITSVListener {
 
     private IAutoIDGenerator getIDGenerator() {
         IAutoIDGenerator gen = null;
+        IExistenceChecker checker = getIDExistenceChecker();
         if ( idGenOpts.prefix != null ) {
             if ( idGenOpts.min == -1 ) {
                 cli.error("Missing --min option, required with --prefix");
@@ -274,16 +296,60 @@ public class TSVTool implements Runnable, ITSVListener {
                 idGenOpts.max = idGenOpts.min + 1000;
             }
             String format = String.format("%s%%0%dd", idGenOpts.prefix, idGenOpts.width);
-            gen = new SequentialIDGenerator(format, idGenOpts.min, idGenOpts.max, (id) -> false);
+            gen = new SequentialIDGenerator(format, idGenOpts.min, idGenOpts.max, checker);
         } else {
             try {
                 IDRange rng = IDPolicyHelper.getRange(idGenOpts.range, new String[] { "dicer" }, idGenOpts.policy);
-                gen = new SequentialIDGenerator(rng, (id) -> false);
+                gen = new SequentialIDGenerator(rng, checker);
             } catch ( InvalidIDPolicyException | IDRangeNotFoundException | IOException e ) {
                 cli.error("Cannot use ID policy file: %s", e.getMessage());
             }
         }
 
         return idGenOpts.shortFormat ? new ShortenedIDGenerator(gen) : gen;
+    }
+
+    private IExistenceChecker getIDExistenceChecker() {
+        IExistenceChecker checker = null;
+        if ( idSourceOpts.ontologyFile != null ) {
+            OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
+            File catalog = getCatalogFile();
+            if (catalog != null) {
+                try {
+                    mgr.getIRIMappers().add(new XMLCatalogIRIMapper(catalog));
+                } catch ( CatalogException | IllegalArgumentException e ) {
+                    cli.error("Cannot parse catalog: %s", e.getMessage());
+                }
+            }
+            try {
+                OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(idSourceOpts.ontologyFile));
+                checker = (id) -> ont.containsEntityInSignature(IRI.create(id));
+            } catch ( OWLOntologyCreationException e ) {
+                cli.error("Cannot read ontology %s: %s", idSourceOpts.ontologyFile, e.getMessage());
+            }
+        } else {
+            checker = (id) -> false;
+        }
+
+        return checker;
+    }
+
+    private File getCatalogFile() {
+        File catalog = null;
+        if ( idSourceOpts.catalogFile != null ) {
+            if ( !idSourceOpts.catalogFile.equals("none") ) {
+                catalog = new File(idSourceOpts.catalogFile);
+                if ( !catalog.exists() ) {
+                    cli.error("Specified catalog %s not found", idSourceOpts.catalogFile);
+                }
+            }
+        } else {
+            catalog = new File("catalog-v001.xml");
+            if ( !catalog.exists() ) {
+                catalog = null;
+            }
+        }
+
+        return catalog;
     }
 }
