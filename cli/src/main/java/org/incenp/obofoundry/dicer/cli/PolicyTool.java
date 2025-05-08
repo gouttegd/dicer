@@ -66,7 +66,7 @@ public class PolicyTool implements Runnable {
                 description = "Write the policy to FILE. Default is to write back to the original input file.")
         public void setOutputFile(String file) {
             outputFile = file;
-            write = true;
+            forceWrite = true;
         }
 
         public String getOutputFile() {
@@ -76,6 +76,12 @@ public class PolicyTool implements Runnable {
         @Option(names = { "-s", "--save" }, defaultValue = "false",
                 description = "Force writing the policy. Implied by --output and any option that modifies the policy.")
         boolean write;
+
+        boolean forceWrite = false;
+
+        boolean isWriteEnabled() {
+            return forceWrite ? forceWrite : write;
+        }
     }
 
     @ArgGroup(validate = false, heading = "%nEditing options:%n")
@@ -126,7 +132,7 @@ public class PolicyTool implements Runnable {
                 IDRange rng = policy.addRange(editOptions.newRange, null, editOptions.size);
                 cli.info("Allocated range [%d..%d) for user \"%s\"", rng.getLowerBound(), rng.getUpperBound(),
                         rng.getName());
-                ioOptions.write = true;
+                ioOptions.forceWrite = true;
             } catch ( IDRangeNotFoundException e ) {
                 cli.error("Cannot allocate range: %s", e.getMessage());
             }
@@ -145,7 +151,7 @@ public class PolicyTool implements Runnable {
             }
         }
 
-        if ( ioOptions.write ) {
+        if ( ioOptions.isWriteEnabled() ) {
             try {
                 new IDPolicyWriter().write(policy, ioOptions.getOutputFile());
             } catch ( IOException e ) {
