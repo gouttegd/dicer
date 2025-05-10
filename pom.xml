@@ -201,6 +201,9 @@
             </reports>
           </reportSet>
         </reportSets>
+        <configuration>
+          <excludePackageNames>org.incenp.obofoundry.dicer.cli</excludePackageNames>
+        </configuration>
       </plugin>
     </plugins>
   </reporting>

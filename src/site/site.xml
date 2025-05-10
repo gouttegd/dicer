@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0
+  http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+  <body>
+    <menu name="Dicer" inherit="top">
+      <item name="About" href="index.html" />
+      <item name="Library" href="dicer-lib/index.html" />
+      <item name="Command-line tool" href="dicer-cli/index.html" />
+    </menu>
+    <menu name="Links" inherit="bottom">
+      <item name="Issue tracker" href="https://github.com/gouttegd/dicer/issues" />
+      <item name="Current release downloads" href="https://github.com/gouttegd/dicer/releases/tag/dicer-${this.version}/">
+        <item name="Dicer-CLI" href="https://github.com/gouttegd/dicer/releases/download/dicer-${this.version}/dicer-cli-${this.version}.jar" />
+      </item>
+    </menu>
+    <footer><![CDATA[Copyright © 2025 Damien Goutte-Gattat]]></footer>
+  </body>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.9</version>
+  </skin>
+</project>

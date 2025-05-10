@@ -14,57 +14,37 @@ interfering RNA gene silencing pathway.
 
 Command-line usage
 ------------------
-The command-line tool currently allows performing the following tasks.
 
-### Validating a policy file
-Simply call the tool with the name of the policy file to validate:
+* Validating a policy file:
 
 ```sh
-$ dicer-cli myont-idranges.owl
+$ dicer-cli policy myont-idranges.owl
 ```
 
-The command will exit with a return code of zero if the file contains a
-valid policy; otherwise, an error message will be printed and the
-command will exit with a non-zero value.
-
-### Re-serialising a policy file
-Add the `--save` option to force the tool to write the policy back to
-the original input file:
+* Listing the ranges in a ID policy file:
 
 ```sh
-$ dicer-cli myont-idranges.owl --save
-```
-
-To write the re-serialised policy into a different file, use the
-`--output` option instead:
-
-```sh
-$ dicer-cli myont-idranges.owl --output reserialised-idranges.owl
-```
-
-### Listing ranges in the policy
-Use the `--list` option to print the ranges defined in the policy,
-sorted by their bounds (lower ranges first):
-
-```sh
-$ dicer-cli myont-idranges --list
+$ dicer-cli policy myont-idranges.owl --list
 Alice: [0..10000)
 Bob: [50000..60000)
 ```
 
-### Allocate a new range
-To automatically allocate a new range of 20,000 IDs to the user
-_Charlie_:
+* Allocating a new range:
 
 ```sh
 $ dicer-cli myont-idranges.owl --add-range Charlie --size 20000
 dicer-cli: Allocated range [10000..30000) for user "Charlie"
 ```
 
-Allocating a new range automatically implies the `--save` option, so
-that the modified policy with its new range is automatically saved to
-its original file. To save it to a different file, use the `--output`
-option.
+* Filling a TSV file with auto-generated IDs:
+
+```sh
+$ dicer-cli tsv input.tsv \
+            --policy myont-idranges.owl \
+            --range Alice \
+            --column 2 \
+            --output output.tsv
+```
 
 
 Building
@@ -80,10 +60,9 @@ files:
 
 Homepage and repository
 -----------------------
-At some point the project will be located at
-<https://incenp.org/dvlpt/dicer/>, where the documentation (when it will
-exist!) will be located. The source code is available in a Git
-repository at <https://github.com/gouttegd/dicer>.
+The project is located at <https://incenp.org/dvlpt/dicer/>, where some
+(currently very sparse) documentation is also hosted. The source code is
+available in a Git repository at <https://github.com/gouttegd/dicer>.
 
 
 Copying
