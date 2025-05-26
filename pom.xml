@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.incenp</groupId>
   <artifactId>dicer</artifactId>
-  <version>0.2.1-SNAPSHOT</version>
+  <version>0.2.1</version>
   <packaging>pom</packaging>
 
   <name>Dicer</name>
@@ -30,7 +30,7 @@
     <connection>scm:git:https://github.com/gouttegd/dicer.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/gouttegd/dicer.git</developerConnection>
     <url>https://github.com/gouttegd/dicer</url>
-    <tag>HEAD</tag>
+    <tag>dicer-0.2.1</tag>
   </scm>
 
   <issueManagement>
