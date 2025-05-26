@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.incenp</groupId>
     <artifactId>dicer</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2-SNAPSHOT</version>
   </parent>
   <artifactId>dicer-lib</artifactId>
 
@@ -13,7 +13,7 @@
   <url>https://incenp.org/dvlpt/dicer/library.html</url>
   <scm>
     <url>https://github.com/gouttegd/dicer</url>
-    <tag>dicer-0.2.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
