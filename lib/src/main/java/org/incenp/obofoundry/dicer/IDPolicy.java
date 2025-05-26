@@ -306,10 +306,10 @@ public class IDPolicy {
     protected void addRange(int id, String name, String comment, int lower, int upper)
             throws InvalidIDPolicyException {
         if ( lower < 0 || lower >= upper || upper > maxBound ) {
-            throw new InvalidIDPolicyException("Invalid ID range: [%d..%d)", lower, upper);
+            throw new InvalidIDPolicyException("Invalid ID range [%d..%d) for \"%s\"", lower, upper, name);
         }
         if ( rangesByID.containsKey(id) ) {
-            throw new InvalidIDPolicyException("Range ID already in use: %d", id);
+            throw new InvalidIDPolicyException("Range ID %d already in use", id);
         }
         for ( IDRange r : rangesByID.values() ) {
             if ( !(upper <= r.getLowerBound() || lower >= r.getUpperBound()) ) {
