@@ -1,3 +1,11 @@
+Changes in Dicer 0.2.1
+----------------------
+
+    * New options to the `dicer-cli policy` command:
+      * `--show-owlapi-error`;
+      * `--assume-manchester`.
+
+
 Changes in Dicer 0.2.0
 ----------------------
 
