@@ -18,8 +18,10 @@
 
 package org.incenp.obofoundry.dicer.cli;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.incenp.obofoundry.dicer.IDPolicy;
 import org.incenp.obofoundry.dicer.IDPolicyReader;
@@ -27,6 +29,12 @@ import org.incenp.obofoundry.dicer.IDPolicyWriter;
 import org.incenp.obofoundry.dicer.IDRange;
 import org.incenp.obofoundry.dicer.IDRangeNotFoundException;
 import org.incenp.obofoundry.dicer.InvalidIDPolicyException;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxOntologyParserFactory;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLRuntimeException;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -58,6 +66,14 @@ public class PolicyTool implements Runnable {
         @Parameters(index = "0", paramLabel = "FILE",
                 description = "The policy file to read.")
         String inputFile;
+
+        @Option(names = { "--assume-manchester" },
+                description = "Assume the policy file is in OWL Manchester syntax.")
+        public boolean assumeManchester = false;
+
+        @Option(names = { "--show-owlapi-error" },
+                description = "Print the full OWLAPI error message if the policy cannot be loaded")
+        public boolean showOWLAPIError = false;
 
         String outputFile;
 
@@ -121,11 +137,7 @@ public class PolicyTool implements Runnable {
 
     @Override
     public void run() {
-        try {
-            policy = new IDPolicyReader().read(ioOptions.inputFile);
-        } catch ( InvalidIDPolicyException | IOException e ) {
-            cli.error("Cannot read policy file: %s", e.getMessage());
-        }
+        policy = readPolicy();
 
         if ( editOptions.newRange != null ) {
             try {
@@ -158,5 +170,32 @@ public class PolicyTool implements Runnable {
                 cli.error("Cannot write policy file: %s", e.getMessage());
             }
         }
+    }
+
+    private IDPolicy readPolicy() {
+        IDPolicy policy = null;
+        OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
+
+        if ( ioOptions.assumeManchester ) {
+            // Disable all parsers other than the Manchester parser; this is mostly intended
+            // so that the error message in case of an invalid file is not "polluted" by the
+            // errors reported by all the other parsers.
+            mgr.setOntologyParsers(Set.of(new ManchesterOWLSyntaxOntologyParserFactory()));
+        }
+        try {
+            OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(ioOptions.inputFile));
+            policy = new IDPolicyReader().fromOntology(ont);
+        } catch ( OWLOntologyCreationException | OWLRuntimeException e ) {
+            String error = "Cannot read policy file";
+            if ( ioOptions.showOWLAPIError ) {
+                // The OWLAPI error message is very verbose, so we only show it if the user
+                // explicitly requested it.
+                error += "\n" + e.getMessage();
+            }
+            cli.error(error);
+        } catch ( InvalidIDPolicyException e ) {
+            cli.error("Invalid ID range policy: %s", e.getMessage());
+        }
+        return policy;
     }
 }
