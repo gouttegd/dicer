@@ -142,6 +142,10 @@ public class TSVTool implements Runnable, ITSVListener {
                 defaultValue = "true", fallbackValue = "true",
                 description = "Overwrite existing values. This is enabled by default.")
         private boolean overwrite;
+
+        @Option(names = {"--overwrite-prefix" },
+                description = "Only overwrite existing values that start with the specified prefix.")
+        private String rewritePrefix;
     }
 
     @ArgGroup(validate = false, heading = "%nID constraints:%n")
@@ -205,7 +209,17 @@ public class TSVTool implements Runnable, ITSVListener {
         generator = getIDGenerator();
         try {
             for ( List<String> row : rows ) {
-                if ( editOpts.overwrite || row.get(columnIndex).isEmpty() ) {
+                boolean generate = false;
+                String existingID = row.get(columnIndex);
+                if ( existingID.isEmpty() ) {
+                    generate = true;
+                } else if ( editOpts.overwrite ) {
+                    if ( editOpts.rewritePrefix == null || existingID.startsWith(editOpts.rewritePrefix) ) {
+                        generate = true;
+                    }
+                }
+
+                if ( generate ) {
                     row.set(columnIndex, generator.nextID());
                 }
             }

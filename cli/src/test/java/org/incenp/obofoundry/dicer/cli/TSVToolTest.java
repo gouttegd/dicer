@@ -132,6 +132,17 @@ public class TSVToolTest extends CLITestBase {
     }
 
     @Test
+    void testOverwriteOnlyValuesWithGivenPrefix() throws IOException {
+        runCommand(0, "sample-existing-values.tsv", "sample-preserved-prefixed-values.tsv",
+                new String[] {
+                        "--prefix", "https://example.org/DICER_",
+                        "--min-id", "1000",
+                        "--overwrite-prefix",
+                        "https://example.org/DICER_00008"
+        });
+    }
+
+    @Test
     void testExplicitInputSeparator() throws IOException {
         runCommand(0, "sample.tsv", "sample-edit1-comma-input-sep.csv", new String[] {
                 "--prefix", "https://example.org/DICER_",
