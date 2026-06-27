@@ -41,6 +41,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -323,7 +324,7 @@ public class TSVTool implements Runnable, ITSVListener {
             }
             try {
                 OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(idSourceOpts.ontologyFile));
-                checker = (id) -> ont.containsEntityInSignature(IRI.create(id));
+                checker = (id) -> ont.containsEntityInSignature(IRI.create(id), Imports.INCLUDED);
             } catch ( OWLOntologyCreationException e ) {
                 cli.error("Cannot read ontology %s: %s", idSourceOpts.ontologyFile, e.getMessage());
             }

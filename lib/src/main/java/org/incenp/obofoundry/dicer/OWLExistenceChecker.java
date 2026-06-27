@@ -20,6 +20,7 @@ package org.incenp.obofoundry.dicer;
 
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLSignature;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 /**
  * An IExistenceChecker implementation that uses a OWLSignature object as the
@@ -42,6 +43,6 @@ public class OWLExistenceChecker implements IExistenceChecker {
 
     @Override
     public boolean exists(String id) {
-        return signature.containsEntityInSignature(IRI.create(id));
+        return signature.containsEntityInSignature(IRI.create(id), Imports.INCLUDED);
     }
 }
