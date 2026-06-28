@@ -1,3 +1,10 @@
+Changes in Dicer 0.2.2
+----------------------
+
+    * OWLExistenceChecker checks for entities in the imports closure.
+    * New `--overwrite-prefix` option to the `dicer tsv` command.
+
+
 Changes in Dicer 0.2.1
 ----------------------
 
