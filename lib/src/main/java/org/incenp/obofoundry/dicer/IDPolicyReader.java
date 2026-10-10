@@ -43,6 +43,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
+import org.semanticweb.owlapi.model.OWLDataVisitorEx;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDatatypeDefinitionAxiom;
 import org.semanticweb.owlapi.model.OWLDatatypeRestriction;
@@ -50,7 +51,6 @@ import org.semanticweb.owlapi.model.OWLFacetRestriction;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
-import org.semanticweb.owlapi.util.OWLDataVisitorExAdapter;
 import org.semanticweb.owlapi.vocab.OWLFacet;
 
 /**
@@ -91,7 +91,7 @@ public class IDPolicyReader {
      *                                  policy.
      */
     public IDPolicy fromOntology(OWLOntology ontology) throws InvalidIDPolicyException {
-        String name = getPolicyName(ontology.getOntologyID().getOntologyIRI().orNull());
+        String name = getPolicyName(ontology.getOntologyID().getOntologyIRI().orElse(null));
         String prefix = null;
         String prefixName = null;
         int width = 7;
@@ -192,14 +192,10 @@ public class IDPolicyReader {
         }
     }
 
-    private class RangeDatatypeVisitor extends OWLDataVisitorExAdapter<Void> {
+    private class RangeDatatypeVisitor implements OWLDataVisitorEx<Void> {
 
         private int lower = -1;
         private int upper = -1;
-
-        public RangeDatatypeVisitor() {
-            super(null);
-        }
 
         @Override
         public Void visit(OWLDatatypeRestriction node) {

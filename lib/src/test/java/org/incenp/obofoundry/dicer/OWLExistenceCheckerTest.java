@@ -48,7 +48,7 @@ public class OWLExistenceCheckerTest {
     private OWLOntology ontology;
 
     @BeforeEach
-    private void createOntology() throws OWLOntologyCreationException {
+    void createOntology() throws OWLOntologyCreationException {
         OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
         ontology = mgr.createOntology();
         OWLDataFactory fac = mgr.getOWLDataFactory();
