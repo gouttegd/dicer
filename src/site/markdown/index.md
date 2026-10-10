@@ -19,5 +19,4 @@ code is available in a Git repository at
 Copying
 -------
 
-Dicer is distributed under the terms of the GNU General Public License,
-version 3 or higher.
+Dicer is distributed under the terms of the 3-clause BSD license.
