@@ -57,6 +57,10 @@ files:
 * `dicer-cli-z.y.z.jar` (in `cli/target`): the `dicer-cli` command-line
   tool, as a self-sufficient executable Jar archive.
 
+Note that starting from version 0.3.0, Dicer requires OWLAPI 5.x instead
+of OWLAPI 4.x – stick to Dicer 0.2.x if you need to use Dicer within a
+project built against OWLAPI 4.x.
+
 
 Homepage and repository
 -----------------------
